@@ -26,13 +26,17 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
-      - name: Install Lua test interpreter
-        run: sudo apt-get update && sudo apt-get install -y lua5.4
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4 qt6-declarative-dev qml6-module-qtquick qml6-module-qtqml qml6-module-qtqml-models qml6-module-qtqml-workerscript
       - name: Verify published runtime and manifest
         run: python3 scripts/check-release.py
       - name: Python regression tests
         run: python3 -m unittest discover -s tests -v
       - name: JavaScript model tests
         run: node tests/model.test.cjs
+      - name: Transparent capture rendering regression
+        run: python3 tests/run-capture-alpha.py
       - name: Check patch whitespace
         run: git diff --check

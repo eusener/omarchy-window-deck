@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "eusener.window-deck",
   "name": "Window Deck",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Eusener Castilho",
   "license": "MIT",
   "description": "Workspace-local minimized windows and a cinematic window picker.",
@@ -12,8 +12,8 @@
   ],
   "keepLoaded": true,
   "entryPoints": {
-    "barWidget": "runtime/v_1_2_0_21817f768a91/Widget.qml",
-    "overlay": "runtime/v_1_2_0_21817f768a91/Deck.qml"
+    "barWidget": "runtime/v_1_2_1_c986a6c8c060/Widget.qml",
+    "overlay": "runtime/v_1_2_1_c986a6c8c060/Deck.qml"
   },
   "barWidget": {
     "displayName": "Window Deck",

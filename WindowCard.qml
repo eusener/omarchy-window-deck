@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell.Wayland
 import qs.Commons as Commons
 
 Item {
@@ -57,17 +56,10 @@ Item {
             id: liveCapture
             Item {
                 readonly property bool hasContent: capture.hasContent
-                ScreencopyView {
+                WindowCapture {
                     id: capture
-                    anchors.centerIn: parent
-                    readonly property real ratio: sourceSize.height > 0 ? sourceSize.width / sourceSize.height : 1.6
-                    width: Math.min(parent.width, parent.height * ratio)
-                    height: width / ratio
                     captureSource: root.captureEnabled ? root.toplevel : null
-                    constraintSize: Qt.size(picture.width * 2, picture.height * 2)
                     live: root.captureEnabled && !root.record.minimized
-                    paintCursor: false
-                    visible: hasContent
                     Component.onCompleted: if (!live) captureFrame()
                 }
             }

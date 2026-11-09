@@ -2,6 +2,8 @@
 
 O runtime usa somente as dependências do Omarchy. Para os testes de desenvolvimento, são necessários Python 3, Node.js e o interpretador `lua`. Os testes visuais também exigem Quickshell e os módulos do Omarchy instalados.
 
+O teste de composição de captura usa `qmake6`, compilador C++, `make` e os módulos de desenvolvimento e runtime QML do Qt Quick. No Ubuntu: `qt6-declarative-dev`, `qml6-module-qtquick`, `qml6-module-qtqml`, `qml6-module-qtqml-models` e `qml6-module-qtqml-workerscript`. Ele roda sem compositor, com uma textura que reproduz a importação DMA-BUF do Quickshell: pixels transparentes declarados como opacos. Isso verifica que o fundo continua sólido nos cartões de janelas Glassy, em temas claros e escuros, sem depender de capturas pessoais.
+
 ## Alterar o plugin
 
 Edite os arquivos fonte na raiz e os catálogos em `i18n/`. Preserve o id `eusener.window-deck`, o isolamento por área/monitor e os tokens compartilhados de `qs.Commons`. Títulos de janelas são dados externos e devem permanecer em texto simples.
@@ -21,11 +23,12 @@ O primeiro comando cria um diretório de runtime identificado pela versão e pel
 python3 scripts/check-release.py
 python3 -m unittest discover -s tests -v
 node tests/model.test.cjs
+python3 tests/run-capture-alpha.py
 omarchy plugin validate .
 bash tests/run-preview.sh
 ```
 
-O CI executa as verificações portáteis em Python 3.12/3.14 e Node 24, com Lua 5.4. A validação nativa e os testes de UI precisam do Omarchy. A integração de tooltip no teste JavaScript é pulada quando o shell não está instalado.
+O CI executa as verificações portáteis em Python 3.12/3.14 e Node 24, com Lua 5.4, e o teste de composição Qt. A validação nativa e os demais testes de UI precisam do Omarchy. A integração de tooltip no teste JavaScript é pulada quando o shell não está instalado.
 
 O teste offscreen não comprova o comportamento real de layer-shell, atalhos ou captura do compositor. Use também [o roteiro de desktop](docs/desktop-checklist.md). As imagens de documentação usam janelas ilustrativas para não publicar dados pessoais.
 

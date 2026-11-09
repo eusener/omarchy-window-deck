@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1
+
+- Corrige a sobreposição do desktop nas miniaturas de janelas transparentes, como terminais com Glassy, forçando a composição alfa sobre o fundo do cartão.
+- Teste de renderização reproduz o defeito de textura exportada com metadados opacos e pixels transparentes, em temas claros e escuros.
+
 ## 1.2.0
 
 - Distribuição pronta para `omarchy plugin add`, com manifesto na raiz e runtime gerado incluído no Git.
