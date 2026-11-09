@@ -34,7 +34,7 @@ Confira os atalhos atuais com `omarchy menu keybindings --print`. Acrescente est
 ```lua
 o.rebind("SUPER + TAB", "Window Deck", "omarchy-shell shell summon eusener.window-deck '{}'")
 o.rebind("SUPER + M", "Minimizar janela", 'python3 "$HOME/.config/omarchy/plugins/eusener.window-deck/backend.py" minimize')
-o.rebind("SUPER + CTRL + M", "Restaurar janela minimizada", 'python3 "$HOME/.config/omarchy/plugins/eusener.window-deck/backend.py" restore-last')
+o.rebind("SUPER + CTRL + M", "Restaurar janela", 'python3 "$HOME/.config/omarchy/plugins/eusener.window-deck/backend.py" restore-last')
 o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))
 ```
 
@@ -56,7 +56,7 @@ omarchy-shell shell summon eusener.window-deck '{}'
 | Ação | Controle |
 | --- | --- |
 | Minimizar a janela ativa | Super+M, após configurar o atalho |
-| Restaurar a minimizada mais recente da área ativa | Super+Ctrl+M, após configurar o atalho |
+| Restaurar o tamanho da maximizada ativa ou trazer a minimizada mais recente | Super+Ctrl+M, após configurar o atalho |
 | Maximizar a janela ativa | Super+Ctrl+Shift+M, após configurar o atalho |
 | Abrir o seletor da área atual | Super+Tab, após configurar o atalho |
 | Próxima janela | Tab, seta direita ou repetir Super+Tab |
@@ -68,7 +68,7 @@ omarchy-shell shell summon eusener.window-deck '{}'
 
 Soltar Super não confirma a seleção. A barra mostra até seis ícones, um por janela minimizada da área ativa daquele monitor. Clique para restaurar. O botão +N abre as minimizadas excedentes. Sem minimizadas, a faixa não ocupa espaço.
 
-Super+Ctrl+M usa o histórico de foco para escolher a janela minimizada mais recente da área ativa. Pressionar novamente restaura a próxima; sem minimizadas elegíveis, não faz nada. Janelas de outras áreas ficam onde estão. Super+Ctrl+Shift+M aplica a maximização nativa, preservando a barra, sem alternar para tela cheia.
+Super+Ctrl+M primeiro restaura o tamanho anterior da janela ativa, se ela estiver maximizada. Caso contrário, usa o histórico de foco para trazer a janela minimizada mais recente da área ativa. Sem uma janela maximizada ativa nem minimizadas elegíveis, não faz nada. Janelas de outras áreas ficam onde estão. Super+Ctrl+Shift+M aplica a maximização nativa, preservando a barra, sem alternar para tela cheia.
 
 O seletor inclui janelas abertas e minimizadas da área atual e exclui outros desktops e scratchpads. A seleção acompanha a janela pelo endereço mesmo quando a lista muda. A interface respeita o idioma, a fonte, as cores e a preferência de animações do Omarchy. Há traduções em português brasileiro e inglês, com fallback para inglês nos demais idiomas.
 

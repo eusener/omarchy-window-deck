@@ -69,6 +69,7 @@ class ActionTests(unittest.TestCase):
         self.fail_kind = ""
         self.active_workspace = 2
         self.live_workspace = 2
+        self.focused = None
         self.mock_run = patch.object(backend, "run", side_effect=self.ipc).start()
         self.addCleanup(patch.stopall)
 
@@ -85,13 +86,18 @@ local effects = {{}}
 local function descriptor(kind)
     return function(args) return {{kind=kind, args=args}} end
 end
-hl = {{ dsp = {{ window = {{tag=descriptor("tag"),move=descriptor("move"),alter_zorder=descriptor("raise")}}, focus=descriptor("focus") }} }}
+hl = {{ dsp = {{ window = {{tag=descriptor("tag"),move=descriptor("move"),alter_zorder=descriptor("raise"),fullscreen=descriptor("fullscreen")}}, focus=descriptor("focus") }} }}
 function hl.get_window(selector) return live end
 function hl.get_active_workspace() return {{id={lua_value(self.live_workspace)}}} end
+function hl.get_active_window() return {lua_value(self.focused)} end
 function hl.dispatch(operation)
     if operation.kind == {lua_value(self.fail_kind)} then return {{ok=false,error="rejected"}} end
     local args = operation.args
-    effects[#effects+1] = operation.kind .. ":" .. tostring(args.tag or args.workspace or args.window or "")
+    local target = args.window
+    if type(target) == "table" then target = "address:" .. target.address end
+    local effect = operation.kind .. ":" .. tostring(args.tag or args.workspace or target or "")
+    if operation.kind == "fullscreen" then effect = effect .. ":" .. tostring(args.mode) .. ":" .. tostring(args.action) end
+    effects[#effects+1] = effect
     return {{ok=true}}
 end
 local execute = assert(load({lua_value(chunk)}))
@@ -196,7 +202,35 @@ if ok and not (type(value) == "table" and value.ok == false) then print("ok") el
         self.snapshot = [client(), client("0xaaa", -99, ["omarchy-minimized-from-12"]),
                          client("0xbbb", -99, ["omarchy-minimized-from-2", "omarchy-minimized-from-03"])]
         self.assertEqual(backend.main(["restore-last"]), 0)
-        self.assertFalse(any(c[1] == "eval" for c in self.calls))
+        self.assertEqual(self.effects, [])
+
+    def test_restore_shortcut_unmaximizes_focused_window_without_minimized_windows(self):
+        self.snapshot = []
+        self.focused = client(fullscreen=1)
+        backend.restore_last()
+        self.assertEqual(self.effects, ["fullscreen:address:0xabc:maximized:unset"])
+
+    def test_restore_shortcut_prioritizes_unmaximizing_over_minimized_windows(self):
+        self.snapshot = self.live = client(workspace=-99, tags=["omarchy-minimized-from-2"])
+        self.focused = client("0xdef", fullscreen=1)
+        backend.restore_last()
+        self.assertEqual(self.effects, ["fullscreen:address:0xdef:maximized:unset"])
+
+    def test_restore_shortcut_never_unmaximizes_another_workspace_or_unmapped_window(self):
+        self.snapshot = []
+        for focused in (client(workspace=12, fullscreen=1), client(fullscreen=1, mapped=False),
+                        client(fullscreen=2), None):
+            self.focused = focused
+            with self.subTest(focused=focused):
+                backend.restore_last()
+        self.assertEqual(self.effects, [])
+
+    def test_restore_shortcut_reports_rejected_unmaximize(self):
+        self.snapshot = []
+        self.focused = client(fullscreen=1)
+        self.fail_kind = "fullscreen"
+        with self.assertRaises(backend.DeckError):
+            backend.restore_last()
         self.assertEqual(self.effects, [])
 
     def test_restore_last_rechecks_active_workspace_before_moving(self):

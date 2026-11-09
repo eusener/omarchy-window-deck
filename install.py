@@ -97,7 +97,7 @@ def binding_block(plugin):
             '-- Super+Tab replaces Next workspace; Super+M minimizes in either layout.\n'
             f'o.rebind("SUPER + TAB", "Window Deck", {json.dumps(summon, ensure_ascii=False)})\n'
             f'o.rebind("SUPER + M", "Minimizar janela", {json.dumps(minimize, ensure_ascii=False)})\n'
-            f'o.rebind("SUPER + CTRL + M", "Restaurar janela minimizada", {json.dumps(restore, ensure_ascii=False)})\n'
+            f'o.rebind("SUPER + CTRL + M", "Restaurar janela", {json.dumps(restore, ensure_ascii=False)})\n'
             'o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))\n'
             + END + "\n")
 

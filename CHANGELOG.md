@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+- Super+Ctrl+M restaura primeiro o tamanho anterior da janela ativa maximizada. Quando ela não está maximizada, continua trazendo a minimizada mais recente da área atual.
+
 ## 1.3.0
 
 - Super+Ctrl+M restaura a minimizada mais recente no histórico de foco da área ativa, com validação da área e da origem dentro do compositor.

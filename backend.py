@@ -128,6 +128,9 @@ def restore_last():
         if record["minimized"] and record["origin"] == workspace:
             transaction("restore-last", record["address"], workspace, True)
             return
+    # Even without minimized candidates, the focused window may be maximized.
+    # Decide in the same compositor transaction that applies the restoration.
+    transaction("restore-last", "", workspace)
 
 
 def main(argv=None):

@@ -1,19 +1,25 @@
 -- Evaluated as one compositor request: no external client can interleave a move
 -- between these guards and the mutation. No globals or persistent hooks.
 return function(action, address, expected_workspace, was_minimized)
+    local function apply(dispatcher)
+        local result = hl.dispatch(dispatcher)
+        assert(type(result) == "table" and result.ok, "Window operation rejected")
+    end
+
     if action == "restore-last" then
         local active = hl.get_active_workspace()
         assert(active and active.id == expected_workspace and active.id > 0, "Active workspace changed")
+        local focused = hl.get_active_window()
+        if focused and focused.mapped and focused.workspace and focused.workspace.id == expected_workspace and focused.fullscreen == 1 then
+            apply(hl.dsp.window.fullscreen({mode = "maximized", action = "unset", window = focused}))
+            return
+        end
+        if address == "" then return end
         action = "restore"
     end
     local selector = "address:" .. address
     local window = hl.get_window(selector)
     assert(window and window.mapped and window.workspace, "Window no longer exists")
-
-    local function apply(dispatcher)
-        local result = hl.dispatch(dispatcher)
-        assert(type(result) == "table" and result.ok, "Window operation rejected")
-    end
 
     local prefix = "omarchy-minimized-from-"
     local tags = window.tags or {}
