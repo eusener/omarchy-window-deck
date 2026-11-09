@@ -1,0 +1,20 @@
+{
+  "deck.area": "Workspace %1",
+  "deck.windows": {"one": "%1 window", "other": "%1 windows"},
+  "deck.minimizedCount": {"one": "%1 minimized", "other": "%1 minimized"},
+  "deck.minimized": "Minimized",
+  "deck.empty": "No windows in this workspace",
+  "deck.emptyMinimized": "No minimized windows in this workspace",
+  "deck.unavailable": "Preview unavailable",
+  "deck.choose": "choose",
+  "deck.open": "open",
+  "deck.back": "back",
+  "deck.position": "%1 of %2",
+  "deck.restore": "Restore window",
+  "deck.focus": "Focus window",
+  "deck.actionError": "The window moved or is no longer available. Choose again.",
+  "deck.connectionError": "Could not read windows. Try again.",
+  "deck.retry": "Try again",
+  "bar.restore": "Restore %1",
+  "bar.more": "Show %1 more minimized windows"
+}

@@ -1,0 +1,20 @@
+{
+  "deck.area": "Área de trabalho %1",
+  "deck.windows": {"one": "%1 janela", "other": "%1 janelas"},
+  "deck.minimizedCount": {"one": "%1 minimizada", "other": "%1 minimizadas"},
+  "deck.minimized": "Minimizada",
+  "deck.empty": "Nenhuma janela nesta área",
+  "deck.emptyMinimized": "Nenhuma janela minimizada nesta área",
+  "deck.unavailable": "Prévia indisponível",
+  "deck.choose": "escolher",
+  "deck.open": "abrir",
+  "deck.back": "voltar",
+  "deck.position": "%1 de %2",
+  "deck.restore": "Restaurar janela",
+  "deck.focus": "Focalizar janela",
+  "deck.actionError": "A janela mudou ou não está mais disponível. Escolha novamente.",
+  "deck.connectionError": "Não foi possível consultar as janelas. Tente novamente.",
+  "deck.retry": "Tentar novamente",
+  "bar.restore": "Restaurar %1",
+  "bar.more": "Ver mais %1 janelas minimizadas"
+}

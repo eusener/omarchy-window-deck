@@ -1,0 +1,10 @@
+singleton DeckPalette 1.0 DeckPalette.qml
+singleton DeckState 1.0 DeckState.qml
+PlainText 1.0 PlainText.qml
+AppIcon 1.0 AppIcon.qml
+AppBarIcon 1.0 AppBarIcon.qml
+DeckButton 1.0 DeckButton.qml
+WindowCard 1.0 WindowCard.qml
+DeckView 1.0 DeckView.qml
+Widget 1.0 Widget.qml
+Deck 1.0 Deck.qml

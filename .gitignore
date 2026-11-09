@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.superpowers/
+
+# Local development session records are not part of the published plugin.
+PROGRESS.md
+docs/superpowers/

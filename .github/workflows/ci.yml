@@ -1,0 +1,38 @@
+name: Plugin checks
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: ['3.12', '3.14']
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Install Lua test interpreter
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+      - name: Verify published runtime and manifest
+        run: python3 scripts/check-release.py
+      - name: Python regression tests
+        run: python3 -m unittest discover -s tests -v
+      - name: JavaScript model tests
+        run: node tests/model.test.cjs
+      - name: Check patch whitespace
+        run: git diff --check
