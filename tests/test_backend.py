@@ -67,13 +67,17 @@ class ActionTests(unittest.TestCase):
         self.effects = []
         self.calls = []
         self.fail_kind = ""
+        self.active_workspace = 2
+        self.live_workspace = 2
         self.mock_run = patch.object(backend, "run", side_effect=self.ipc).start()
         self.addCleanup(patch.stopall)
 
     def ipc(self, arguments):
         self.calls.append(arguments)
         if arguments[:2] == ["hyprctl", "-j"]:
-            return json.dumps(self.snapshot if arguments[2] == "activewindow" else ([self.snapshot] if self.snapshot else []))
+            if arguments[2] == "activeworkspace":
+                return json.dumps({"id": self.active_workspace})
+            return json.dumps(self.snapshot if arguments[2] == "activewindow" or isinstance(self.snapshot, list) else ([self.snapshot] if self.snapshot else []))
         chunk = arguments[2] if arguments[1] == "eval" else "return hl.dispatch(" + arguments[2] + ")"
         lua = f'''
 local live = {lua_value(self.live)}
@@ -83,6 +87,7 @@ local function descriptor(kind)
 end
 hl = {{ dsp = {{ window = {{tag=descriptor("tag"),move=descriptor("move"),alter_zorder=descriptor("raise")}}, focus=descriptor("focus") }} }}
 function hl.get_window(selector) return live end
+function hl.get_active_workspace() return {{id={lua_value(self.live_workspace)}}} end
 function hl.dispatch(operation)
     if operation.kind == {lua_value(self.fail_kind)} then return {{ok=false,error="rejected"}} end
     local args = operation.args
@@ -174,6 +179,47 @@ if ok and not (type(value) == "table" and value.ok == false) then print("ok") el
         with self.assertRaises(backend.DeckError):
             backend.minimize()
         self.assertEqual(self.effects, [])
+
+    def test_restore_last_chooses_recent_minimized_window_in_active_workspace(self):
+        self.active_workspace = self.live_workspace = 12
+        self.snapshot = [
+            client("0xaaa", -99, ["omarchy-minimized-from-2"], focusHistoryID=0),
+            client("0xbbb", -99, ["omarchy-minimized-from-12"], focusHistoryID=6),
+            client("0xccc", -99, ["omarchy-minimized-from-12"], focusHistoryID=2),
+            client("0xddd", 12, focusHistoryID=1),
+        ]
+        self.live = self.snapshot[2]
+        self.assertEqual(backend.main(["restore-last"]), 0)
+        self.assertEqual(self.effects, ["move:12", "focus:address:0xccc"])
+
+    def test_restore_last_is_no_op_without_eligible_minimized_window(self):
+        self.snapshot = [client(), client("0xaaa", -99, ["omarchy-minimized-from-12"]),
+                         client("0xbbb", -99, ["omarchy-minimized-from-2", "omarchy-minimized-from-03"])]
+        self.assertEqual(backend.main(["restore-last"]), 0)
+        self.assertFalse(any(c[1] == "eval" for c in self.calls))
+        self.assertEqual(self.effects, [])
+
+    def test_restore_last_rechecks_active_workspace_before_moving(self):
+        self.snapshot = self.live = client(workspace=-99, tags=["omarchy-minimized-from-2"])
+        self.live_workspace = 12
+        with self.assertRaises(backend.DeckError):
+            backend.restore_last()
+        self.assertEqual(self.effects, [])
+
+    def test_restore_last_rejects_changed_origin(self):
+        self.snapshot = client(workspace=-99, tags=["omarchy-minimized-from-2"])
+        self.live = client(workspace=-99, tags=["omarchy-minimized-from-12"])
+        with self.assertRaises(backend.DeckError):
+            backend.restore_last()
+        self.assertEqual(self.effects, [])
+
+    def test_restore_last_uses_valid_focus_history_before_unknown_values(self):
+        self.snapshot = [client("0xaaa", -99, ["omarchy-minimized-from-2"], focusHistoryID=-1),
+                         client("0xbbb", -99, ["omarchy-minimized-from-2"], focusHistoryID="0"),
+                         client("0xccc", -99, ["omarchy-minimized-from-2"], focusHistoryID=3)]
+        self.live = self.snapshot[2]
+        backend.restore_last()
+        self.assertEqual(self.effects[-1], "focus:address:0xccc")
 
 
 if __name__ == "__main__":

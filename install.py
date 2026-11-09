@@ -91,11 +91,14 @@ def marker_for(plugin):
 
 def binding_block(plugin):
     minimize = shlex.join(["python3", str(plugin / "backend.py"), "minimize"])
+    restore = shlex.join(["python3", str(plugin / "backend.py"), "restore-last"])
     summon = "omarchy-shell shell summon eusener.window-deck '{}'"
     return (BEGIN + "\n"
             '-- Super+Tab replaces Next workspace; Super+M minimizes in either layout.\n'
             f'o.rebind("SUPER + TAB", "Window Deck", {json.dumps(summon, ensure_ascii=False)})\n'
             f'o.rebind("SUPER + M", "Minimizar janela", {json.dumps(minimize, ensure_ascii=False)})\n'
+            f'o.rebind("SUPER + CTRL + M", "Restaurar janela minimizada", {json.dumps(restore, ensure_ascii=False)})\n'
+            'o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))\n'
             + END + "\n")
 
 

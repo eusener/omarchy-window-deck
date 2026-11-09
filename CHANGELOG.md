@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- Super+Ctrl+M restaura a minimizada mais recente no histórico de foco da área ativa, com validação da área e da origem dentro do compositor.
+- Super+Ctrl+Shift+M maximiza a janela ativa usando o modo nativo do Omarchy.
+- Instalador local atualiza os atalhos gerenciados; Super+M continua minimizando.
+
 ## 1.2.1
 
 - Corrige a sobreposição do desktop nas miniaturas de janelas transparentes, como terminais com Glassy, forçando a composição alfa sobre o fundo do cartão.

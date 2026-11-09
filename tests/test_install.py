@@ -1,6 +1,8 @@
 import importlib.util
 import json
+import shlex
 import shutil
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -46,6 +48,25 @@ class InstallTests(unittest.TestCase):
         first = self.shell.read_text(), self.bindings.read_text()
         self.install()
         self.assertEqual(first, (self.shell.read_text(), self.bindings.read_text()))
+
+    def test_window_shortcuts_dispatch_restore_and_native_maximize(self):
+        self.install()
+        target = self.root / 'omarchy/plugins' / installer.PLUGIN_ID
+        block = installer.BLOCK.search(self.bindings.read_text()).group()
+        script = '''
+local bindings = {}
+o = {rebind = function(keys, label, action) bindings[keys] = action end}
+hl = {dsp = {window = {fullscreen = function(options) return options end}}}
+''' + block + '''
+assert(type(bindings["SUPER + M"]) == "string")
+assert(type(bindings["SUPER + CTRL + M"]) == "string")
+local maximize = bindings["SUPER + CTRL + SHIFT + M"]
+assert(type(maximize) == "table" and maximize.mode == "maximized" and maximize.action == "set")
+io.write(bindings["SUPER + CTRL + M"])
+'''
+        result = subprocess.run(['lua', '-'], input=script, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(shlex.split(result.stdout), ['python3', str(target / 'backend.py'), 'restore-last'])
 
     def test_ui_updates_get_fresh_entry_urls_for_the_running_qml_engine(self):
         with tempfile.TemporaryDirectory(prefix='deck-source-') as directory:

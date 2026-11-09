@@ -114,10 +114,27 @@ def restore(address, expected_workspace):
     transaction("restore", address, workspace, record["minimized"])
 
 
+def restore_last():
+    workspace = valid_workspace(read_json("activeworkspace").get("id"))
+    clients = read_json("clients")[:10000]
+
+    def focus_order(raw):
+        value = raw.get("focusHistoryID") if isinstance(raw, dict) else None
+        return value if type(value) is int and value >= 0 else float("inf")
+
+    # The compositor's focus history survives separate shortcut invocations;
+    # no daemon, timestamps or user files are needed for the restore order.
+    for record in normalize_clients(sorted(clients, key=focus_order)):
+        if record["minimized"] and record["origin"] == workspace:
+            transaction("restore-last", record["address"], workspace, True)
+            return
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="action", required=True)
     commands.add_parser("snapshot")
+    commands.add_parser("restore-last")
     mini = commands.add_parser("minimize")
     mini.add_argument("address", nargs="?")
     show = commands.add_parser("restore")
@@ -130,6 +147,8 @@ def main(argv=None):
         else:
             if args.action == "minimize":
                 minimize(args.address)
+            elif args.action == "restore-last":
+                restore_last()
             else:
                 restore(args.address, args.workspace)
             payload = {"ok": True}
