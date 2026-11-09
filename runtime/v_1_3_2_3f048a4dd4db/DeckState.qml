@@ -11,7 +11,7 @@ Item {
     property var clients: []
     property string error: ""
     property bool pending: false
-    readonly property bool busy: actionProcess.running
+    readonly property bool busy: !!actionProcess && actionProcess.running === true
     readonly property string backendPath: decodeURIComponent(String(Qt.resolvedUrl("backend.py")).replace(/^file:\/\//, ""))
     signal actionFinished(bool success)
 
