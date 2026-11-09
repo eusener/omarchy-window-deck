@@ -17,5 +17,5 @@ env QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_STYLE_OVERRIDE=Fusion \
 if rg -q 'UI_CHECK_FAILED|Failed to load configuration|TypeError:|ReferenceError:' "$preview_root/run.log"; then
     exit 1
 fi
-rg -q 'UI_CHECKS_PASSED: 12' "$preview_root/run.log"
+rg -q 'UI_CHECKS_PASSED: 15' "$preview_root/run.log"
 rg -q 'PREVIEW_SAVED' "$preview_root/run.log"

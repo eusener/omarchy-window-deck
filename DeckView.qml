@@ -14,6 +14,10 @@ Item {
     property var toplevelLookup: null
     property Component previewDelegate: null
     property bool captureEnabled: true
+    // A stable identity-only model preserves capture sessions through metadata
+    // snapshots, but rebuilds them when a source window is replaced or removed.
+    readonly property string windowIdentities: windows.map(function(row) { return row.address; }).join(",")
+    readonly property var windowSlots: windowIdentities ? windowIdentities.split(",") : []
     signal accepted(var record)
     signal cancelled()
     signal selectionRequested(int index)
@@ -100,11 +104,11 @@ Item {
             clip: true
 
             Repeater {
-                model: root.windows
+                model: root.windowSlots
                 delegate: Item {
                     id: slot
-                    required property var modelData
                     required property int index
+                    readonly property var modelData: root.windows[index] || ({})
                     readonly property int distance: index - root.selectedIndex
                     readonly property bool near: Math.abs(distance) <= 2
                     x: (carousel.width - width) / 2 + distance * (width * 0.67)

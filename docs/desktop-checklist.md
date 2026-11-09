@@ -15,6 +15,7 @@ Execute estes testes na sessão gráfica. Testes offscreen não verificam o prot
 - [ ] Navegar por teclado e mouse, confirmar, cancelar e repetir Super+Tab com o seletor aberto.
 - [ ] Restaurar pelo dock e conferir a remoção do ícone da faixa.
 - [ ] Abrir/fechar janelas enquanto o seletor está aberto e verificar a seleção por endereço.
+- [ ] Manter vídeo/animação e atualizações de título em execução com o seletor aberto; conferir continuidade das miniaturas e ausência de piscadas.
 - [ ] Conferir previews e fallback de janelas minimizadas/protegidas, sem restauração temporária.
 - [ ] Trocar de área ou desconectar o monitor com o seletor aberto.
 - [ ] Conferir escala fracionária, fonte maior e animações desativadas.

@@ -55,6 +55,8 @@ Stable geometry: missing previews replace the image with an icon and explanation
 
 WindowCapture preserves the exported aspect ratio and forces source-over alpha composition over the theme background. Quickshell imports native capture textures as opaque even when Glassy applications export transparent pixels; without explicit blending the selected card can punch through the overlay and reveal the desktop. This workaround is local to the preview and does not change application transparency.
 
+Metadata snapshots update existing card bindings. They must not reset every delegate and restart live capture sessions when only a title, focus state or other metadata changes. The delegate model changes only when the ordered window addresses change. Structural changes create fresh captures, avoiding reuse of native ScreencopyView instances across window identities: the installed Quickshell retains old source-destruction connections when a capture is retargeted.
+
 ## Elevation & Depth
 
 Layering comes from a restrained shadow, tonal steps, overlap and the selected border. One background scrim separates the user from the desktop without losing context. No floating ornamental elements or perpetual motion. Native Qt rectangles keep the interface operable under software rendering; thumbnail content is inset within the rounded outer frame.

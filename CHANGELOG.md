@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.2
+
+- Evita reiniciar todas as capturas do Super+Tab quando títulos e outros metadados das janelas são atualizados, reduzindo o flicker durante atualizações frequentes.
+- Testes de UI verificam a continuidade das miniaturas e a criação de capturas novas quando a lista de janelas muda.
+
 ## 1.3.1
 
 - Super+Ctrl+M restaura primeiro o tamanho anterior da janela ativa maximizada. Quando ela não está maximizada, continua trazendo a minimizada mais recente da área atual.

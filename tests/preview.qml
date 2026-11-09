@@ -6,8 +6,10 @@ import qs.Ui as Native
 import ".." as Deck
 
 ShellRoot {
+    id: root
     property int confirmations: 0
     property string lastAddress: ""
+    property int previewCreations: 0
     FloatingWindow {
         id: window
         visible: true
@@ -69,8 +71,10 @@ ShellRoot {
                 ]
                 onSelectionRequested: function(index) { selectedIndex = index; }
                 onAccepted: function(record) { confirmations++; lastAddress = record.address; }
+                toplevelLookup: function(address) { return address; }
                 previewDelegate: Component {
                     Item {
+                        Component.onCompleted: root.previewCreations++
                         readonly property bool hasContent: true
                         Rectangle { anchors.fill: parent; color: "#101723" }
                         Rectangle {
@@ -111,6 +115,35 @@ ShellRoot {
                 if (!condition) { console.error("UI_CHECK_FAILED: " + message); Qt.quit(); return false; }
                 return true;
             }
+            function hasText(item, text) {
+                if (item.text !== undefined && item.text === text) return true;
+                var children = item.children || [];
+                for (var child of children) if (hasText(child, text)) return true;
+                return false;
+            }
+            function cardFor(item, address) {
+                if (item.record && item.record.address === address && item.toplevel !== undefined) return item;
+                var children = item.children || [];
+                for (var child of children) {
+                    var card = cardFor(child, address);
+                    if (card) return card;
+                }
+                return null;
+            }
+            var previousWindows = view.windows;
+            var previousCreations = root.previewCreations;
+            view.windows = previousWindows.map(function(row) {
+                return Object.assign({}, row, {title: "Progress " + row.address});
+            });
+            if (!check(previousCreations > 0 && root.previewCreations === previousCreations, "metadata updates preserve running previews")) return;
+            if (!check(hasText(view, "Progress 0x2"), "metadata updates refresh visible captions")) return;
+            view.windows = previousWindows.map(function(row) {
+                return row.address === "0x2" ? Object.assign({}, row, {address: "0x9", title: "Replacement"}) : row;
+            });
+            var replacement = cardFor(view, "0x9");
+            if (!check(replacement && replacement.toplevel === "0x9" && hasText(view, "Replacement")
+                && root.previewCreations > previousCreations, "window identity changes create a fresh capture")) return;
+            view.windows = previousWindows;
             var originalTheme = Commons.Color.shellValues;
             var originalPanel = Deck.DeckPalette.panel;
             Commons.Color.shellValues = {
@@ -161,7 +194,7 @@ ShellRoot {
             if (overlayComponent.status === Component.Error && overlayComponent.errorString().indexOf("No PanelWindow backend loaded") !== -1)
                 console.log("WAYLAND_OVERLAY_CHECK_PENDING: offscreen platform has no layer-shell backend");
             else if (!check(overlayComponent.status === Component.Ready, "Deck loads: " + overlayComponent.errorString())) return;
-            console.log("UI_CHECKS_PASSED: 12");
+            console.log("UI_CHECKS_PASSED: 15");
             captureTimer.start();
         }
     }
