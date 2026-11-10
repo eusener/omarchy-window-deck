@@ -50,6 +50,8 @@ function normalizeClients(clients) {
             origin: origin,
             minimized: minimized,
             focused: raw.focusHistoryID === 0,
+            // 0 normal, 1 maximized, 2 or 3 fullscreen.
+            fullscreen: Number.isInteger(raw.fullscreen) && raw.fullscreen > 0 ? raw.fullscreen : 0,
             at: pair(raw.at),
             size: pair(raw.size),
             monitorId: Number.isInteger(raw.monitor) ? raw.monitor : -1
@@ -119,12 +121,48 @@ function luaString(value) {
     }) + '"';
 }
 
-// The `hyprctl eval` chunk that restores a window inside the compositor, or
-// "" when the arguments are not a valid address and workspace.
-function restoreChunk(operationsPath, address, workspace) {
-    if (!validAddress(address) || !validWorkspace(workspace)) return "";
-    return "dofile(" + luaString(operationsPath) + ").execute(\"restore\", "
+// Window operations the shell may request; operations.lua validates each one
+// again inside the compositor.
+var ACTIONS = ["restore", "hide", "show", "maximize", "unmaximize"];
+
+// The `hyprctl eval` chunk that runs an operation inside the compositor, or ""
+// when the action, address or workspace is not valid.
+function actionChunk(operationsPath, action, address, workspace) {
+    if (ACTIONS.indexOf(action) < 0 || !validAddress(address) || !validWorkspace(workspace)) return "";
+    return "dofile(" + luaString(operationsPath) + ").execute(" + luaString(action) + ", "
         + luaString(address.toLowerCase()) + ", " + workspace + ")";
+}
+
+function restoreChunk(operationsPath, address, workspace) {
+    return actionChunk(operationsPath, "restore", address, workspace);
+}
+
+// One step on the ladder minimized < normal < maximized: "up" or "down" from
+// the record's state, or "" at either end.
+function ladderAction(record, direction) {
+    if (!record || !record.address) return "";
+    if (direction === "up") return record.minimized ? "show" : record.fullscreen ? "" : "maximize";
+    if (direction === "down") return record.minimized ? "" : record.fullscreen ? "unmaximize" : "hide";
+    return "";
+}
+
+// Omarchy gives each monitor its own block of ten workspaces: 1-10, 11-20...
+// A slot (1-10, the 0 key being 10) maps into the block of `workspace`.
+var SLOTS = 10;
+function workspaceForSlot(workspace, slot) {
+    if (!validWorkspace(workspace) || !Number.isInteger(slot) || slot < 1 || slot > SLOTS) return -1;
+    return Math.floor((workspace - 1) / SLOTS) * SLOTS + slot;
+}
+
+function slotForKey(text) {
+    return /^[0-9]$/.test(String(text)) ? (Number(text) || SLOTS) : -1;
+}
+
+// Windows per slot of the block holding `workspace`, minimized ones included.
+function slotCounts(records, workspace) {
+    var counts = [];
+    for (var n = 1; n <= SLOTS; n++) counts.push(windowsFor(records, workspaceForSlot(workspace, n), false).length);
+    return counts;
 }
 
 function windowsFor(records, workspace, minimizedOnly) {

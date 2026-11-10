@@ -68,6 +68,9 @@ omarchy-shell shell summon eusener.window-deck '{}'
 | Próxima janela | Tab, seta direita ou repetir Super+Tab |
 | Janela anterior | Shift+Tab ou seta esquerda |
 | Abrir ou restaurar a selecionada | Enter ou clique no cartão selecionado |
+| Ver outra área de trabalho do monitor | Teclas 1–9 e 0 (área 10), ou clique na faixa de áreas |
+| Minimizar ou tirar da maximização a selecionada | Seta para baixo, ou botão no cartão |
+| Maximizar ou restaurar a selecionada minimizada | Seta para cima, ou botão no cartão |
 | Selecionar uma miniatura lateral | Clique no cartão lateral |
 | Cancelar | Esc ou clique fora dos cartões |
 | Repetir consulta após erro | R ou botão ↻ |
@@ -76,7 +79,9 @@ Soltar Super não confirma a seleção. A barra mostra até seis ícones, um por
 
 Super+Ctrl+M primeiro restaura o tamanho anterior da janela ativa, se ela estiver maximizada. Caso contrário, usa o histórico de foco para trazer a janela minimizada mais recente da área ativa. Sem uma janela maximizada ativa nem minimizadas elegíveis, não faz nada. Janelas de outras áreas ficam onde estão. Super+Ctrl+Shift+M aplica a maximização nativa, preservando a barra, sem alternar para tela cheia.
 
-O seletor inclui janelas abertas e minimizadas da área atual e exclui outros desktops e scratchpads. A seleção acompanha a janela pelo endereço mesmo quando a lista muda. A interface respeita o idioma, a fonte, as cores e a preferência de animações do Omarchy. Há traduções em português brasileiro e inglês, com fallback para inglês nos demais idiomas.
+O seletor abre na área atual, com as janelas abertas e minimizadas dela, e exclui scratchpads. As teclas numéricas mostram outra área do mesmo monitor, seguindo os blocos do Omarchy (1–10 no primeiro monitor, 11–20 no seguinte); ver outra área não troca a área ativa. Enter numa janela de outra área leva até ela. A faixa no cabeçalho marca a área exibida e a atual, e esmaece as vazias.
+
+As setas para cima e para baixo sobem e descem um degrau entre minimizada, normal e maximizada, sem fechar o seletor e sem trocar o foco: para baixo minimiza uma janela normal ou tira uma maximizada da maximização; para cima restaura uma minimizada na área dela ou maximiza uma normal. Maximizar uma janela tira a maximização da que ocupava a área. Os mesmos comandos aparecem como botões no cartão selecionado. Ao sair com Esc, o foco volta à última janela gerenciada na área atual. A seleção acompanha a janela pelo endereço mesmo quando a lista muda. A interface respeita o idioma, a fonte, as cores e a preferência de animações do Omarchy. Há traduções em português brasileiro e inglês, com fallback para inglês nos demais idiomas.
 
 ## Atualizar
 

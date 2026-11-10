@@ -116,3 +116,36 @@ test('blur radius follows the Hyprland setting and is off when blur is disabled'
   assert.equal(M.blurRadius({ enabled: true, size: 64, passes: 8 }, 1), 64);
   assert.equal(M.blurRadius({ ...blur, enabled: false }, 1), 0);
 });
+test('window state is kept for the management ladder', () => {
+  const rows = M.normalizeClients([client('0xa', 2, [], { fullscreen: 1 }), client('0xb', 2, [], { fullscreen: 'x' }), client('0xc')]);
+  assert.equal(JSON.stringify(rows.map(r => r.fullscreen)), '[1,0,0]');
+});
+test('management ladder steps between minimized, normal and maximized', () => {
+  const normal = { address: '0xa', minimized: false, fullscreen: 0 };
+  const maximized = { ...normal, fullscreen: 1 };
+  const minimized = { ...normal, minimized: true };
+  assert.equal(JSON.stringify([M.ladderAction(minimized, 'up'), M.ladderAction(normal, 'up'), M.ladderAction(maximized, 'up')]), '["show","maximize",""]');
+  assert.equal(JSON.stringify([M.ladderAction(maximized, 'down'), M.ladderAction(normal, 'down'), M.ladderAction(minimized, 'down')]), '["unmaximize","hide",""]');
+  assert.equal(M.ladderAction(undefined, 'up'), '');
+  assert.equal(M.ladderAction(normal, 'sideways'), '');
+});
+test('action chunks accept only known operations', () => {
+  assert.equal(M.actionChunk('/p.lua', 'maximize', '0xAB', 3), 'dofile("/p.lua").execute("maximize", "0xab", 3)');
+  for (const action of ['minimize', 'restore-last', 'execute', '', 'hide"); os.exit(']) assert.equal(M.actionChunk('/p.lua', action, '0xab', 3), '', action);
+  assert.equal(M.restoreChunk('/p.lua', '0xab', 3), 'dofile("/p.lua").execute("restore", "0xab", 3)');
+});
+test('number keys pick a workspace in the monitor block', () => {
+  assert.equal(M.slotForKey('3'), 3);
+  assert.equal(M.slotForKey('0'), 10);
+  assert.equal(M.slotForKey('a'), -1);
+  assert.equal(M.slotForKey('12'), -1);
+  assert.equal(M.workspaceForSlot(2, 3), 3);
+  assert.equal(M.workspaceForSlot(10, 1), 1);
+  assert.equal(M.workspaceForSlot(23, 10), 30);
+  assert.equal(M.workspaceForSlot(23, 0), -1);
+  assert.equal(M.workspaceForSlot(-1, 2), -1);
+});
+test('slot counts include minimized windows of each workspace in the block', () => {
+  const counts = M.slotCounts([{ origin: 12, minimized: false }, { origin: 12, minimized: true }, { origin: 20 }, { origin: 2 }, { origin: null }], 15);
+  assert.equal(JSON.stringify(counts), '[0,2,0,0,0,0,0,0,0,1]');
+});

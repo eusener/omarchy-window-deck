@@ -31,11 +31,12 @@ Item {
         snapshotProcess.running = true;
     }
 
+    // One window operation (Model.ACTIONS) at a time. State, origin and
+    // existence are validated by the compositor in the same call that changes
+    // the window.
     function act(action, address, workspace) {
-        if (busy || action !== "restore") return false;
-        // State, origin and existence are validated by the compositor in the
-        // same call that moves and focuses the window.
-        var chunk = Model.restoreChunk(operationsPath, address, workspace);
+        if (busy) return false;
+        var chunk = Model.actionChunk(operationsPath, action, address, workspace);
         if (!chunk) { error = "action"; return false; }
         actionProcess.command = ["hyprctl", "eval", chunk];
         actionProcess.running = true;

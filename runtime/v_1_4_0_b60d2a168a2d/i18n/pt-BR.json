@@ -1,7 +1,13 @@
 {
   "deck.area": "Área de trabalho %1",
-  "deck.windows": {"one": "%1 janela", "other": "%1 janelas"},
-  "deck.minimizedCount": {"one": "%1 minimizada", "other": "%1 minimizadas"},
+  "deck.windows": {
+    "one": "%1 janela",
+    "other": "%1 janelas"
+  },
+  "deck.minimizedCount": {
+    "one": "%1 minimizada",
+    "other": "%1 minimizadas"
+  },
   "deck.minimized": "Minimizada",
   "deck.empty": "Nenhuma janela nesta área",
   "deck.emptyMinimized": "Nenhuma janela minimizada nesta área",
@@ -16,5 +22,12 @@
   "deck.connectionError": "Não foi possível consultar as janelas. Tente novamente.",
   "deck.retry": "Tentar novamente",
   "bar.restore": "Restaurar %1",
-  "bar.more": "Ver mais %1 janelas minimizadas"
+  "bar.more": "Ver mais %1 janelas minimizadas",
+  "deck.maximized": "Maximizada",
+  "deck.manage": "minimizar / maximizar",
+  "deck.workspace": "área",
+  "deck.action.hide": "Minimizar janela",
+  "deck.action.maximize": "Maximizar janela",
+  "deck.action.unmaximize": "Restaurar tamanho da janela",
+  "deck.action.show": "Restaurar janela na área"
 }

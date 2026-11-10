@@ -201,6 +201,69 @@ io.write(tostring(ok and value ~= false))
         self.assertTrue(ok)
         self.assertEqual(effects, ["focus:address:0xabc"])
 
+    # Picker window management: no focus change, so the picker stays open
+
+    def act(self, action, workspace=2):
+        return self.run_lua(f"deck.execute({lua_value(action)}, '0xabc', {workspace})")
+
+    def test_hide_minimizes_without_touching_focus(self):
+        ok, effects = self.act("hide")
+        self.assertTrue(ok)
+        self.assertEqual(effects, ["tag:+omarchy-minimized-from-2", "move:special:minimized"])
+
+    def test_hide_works_on_a_workspace_that_is_not_active(self):
+        self.windows = [window(workspace=5)]
+        ok, effects = self.act("hide", 5)
+        self.assertTrue(ok)
+        self.assertEqual(effects, ["tag:+omarchy-minimized-from-5", "move:special:minimized"])
+
+    def test_show_returns_a_minimized_window_to_its_origin_without_focus(self):
+        self.windows = [window(workspace=-99, tags=["omarchy-minimized-from-5"])]
+        ok, effects = self.act("show", 5)
+        self.assertTrue(ok)
+        self.assertEqual(effects, ["move:5"])
+
+    def test_show_rejects_normal_or_foreign_windows(self):
+        for live in (window(), window(workspace=-99, tags=["omarchy-minimized-from-3"]), window(workspace=-99)):
+            self.windows = [live]
+            with self.subTest(live=live):
+                ok, effects = self.act("show")
+                self.assertFalse(ok)
+                self.assertEqual(effects, [])
+
+    def test_maximize_hands_over_from_the_maximized_window_of_the_workspace(self):
+        self.windows = [window(), window("0xdef", fullscreen=1), window("0x123", 3, fullscreen=1)]
+        ok, effects = self.act("maximize")
+        self.assertTrue(ok)
+        self.assertEqual(effects, ["fullscreen:address:0xdef:maximized:unset", "fullscreen:address:0xabc:maximized:set"])
+
+    def test_maximize_is_a_no_op_for_a_maximized_or_fullscreen_window(self):
+        for state in (1, 2):
+            self.windows = [window(fullscreen=state)]
+            with self.subTest(state=state):
+                ok, effects = self.act("maximize")
+                self.assertTrue(ok)
+                self.assertEqual(effects, [])
+
+    def test_unmaximize_clears_the_current_mode(self):
+        for state, mode in ((1, "maximized"), (2, "fullscreen")):
+            self.windows = [window(fullscreen=state)]
+            with self.subTest(state=state):
+                ok, effects = self.act("unmaximize")
+                self.assertTrue(ok)
+                self.assertEqual(effects, [f"fullscreen:address:0xabc:{mode}:unset"])
+
+    def test_management_rechecks_the_live_workspace_and_state(self):
+        cases = (("hide", window(workspace=3)), ("maximize", window(workspace=3)),
+                 ("maximize", window(workspace=-99, tags=["omarchy-minimized-from-2"])),
+                 ("unmaximize", window(workspace=-99, tags=["omarchy-minimized-from-2"])), ("hide", None))
+        for action, live in cases:
+            self.windows = [live] if live else []
+            with self.subTest(action=action, live=live):
+                ok, effects = self.act(action)
+                self.assertFalse(ok)
+                self.assertEqual(effects, [])
+
     # Super+Ctrl+M
 
     def test_restore_last_chooses_recent_minimized_window_in_active_workspace(self):

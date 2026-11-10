@@ -7,6 +7,7 @@ DeckButton 1.0 DeckButton.qml
 WindowCard 1.0 WindowCard.qml
 WindowCapture 1.0 WindowCapture.qml
 WindowBackdrop 1.0 WindowBackdrop.qml
+WindowActionIcon 1.0 WindowActionIcon.qml
 DeckView 1.0 DeckView.qml
 Widget 1.0 Widget.qml
 Deck 1.0 Deck.qml

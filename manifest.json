@@ -12,8 +12,8 @@
   ],
   "keepLoaded": true,
   "entryPoints": {
-    "barWidget": "runtime/v_1_4_0_e8fdfb5b80bf/Widget.qml",
-    "overlay": "runtime/v_1_4_0_e8fdfb5b80bf/Deck.qml"
+    "barWidget": "runtime/v_1_4_0_b60d2a168a2d/Widget.qml",
+    "overlay": "runtime/v_1_4_0_b60d2a168a2d/Deck.qml"
   },
   "barWidget": {
     "displayName": "Window Deck",

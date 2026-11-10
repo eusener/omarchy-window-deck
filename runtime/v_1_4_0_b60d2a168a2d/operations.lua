@@ -84,7 +84,7 @@ function M.execute(action, address, expected_workspace, was_minimized)
     assert(window and window.mapped and window.workspace, "Window no longer exists")
     local workspace = window.workspace
 
-    if action == "minimize" then
+    if action == "minimize" or action == "hide" then
         assert(workspace.id == expected_workspace, "Window moved")
         -- Only an explicit minimize from a valid regular workspace may repair
         -- malformed provenance. Tag values are passed as data, never as code.
@@ -95,7 +95,31 @@ function M.execute(action, address, expected_workspace, was_minimized)
         end
         apply(hl.dsp.window.tag({tag = "+" .. PREFIX .. tostring(expected_workspace), window = selector}))
         apply(hl.dsp.window.move({workspace = MINIMIZED, follow = false, window = selector}))
-        apply(hl.dsp.focus({workspace = tostring(expected_workspace)}))
+        -- The shortcut returns focus to the workspace; the picker's "hide"
+        -- leaves focus and the active workspace alone, so it stays open.
+        if action == "minimize" then
+            apply(hl.dsp.focus({workspace = tostring(expected_workspace)}))
+        end
+    elseif action == "show" then
+        -- Back to its origin workspace without focusing it.
+        assert(is_minimized(window), "Window state changed")
+        assert(M.origin(window) == expected_workspace, "Window origin changed")
+        apply(hl.dsp.window.move({workspace = tostring(expected_workspace), follow = false, window = selector}))
+    elseif action == "maximize" or action == "unmaximize" then
+        assert(not is_minimized(window) and workspace.id == expected_workspace, "Window moved")
+        local state = type(window.fullscreen) == "number" and window.fullscreen or 0
+        if action == "maximize" then
+            if state == 0 then
+                -- A workspace shows one maximized or fullscreen window.
+                local cover = covering_window(expected_workspace, address)
+                if cover then
+                    apply(hl.dsp.window.fullscreen({mode = cover.fullscreen == 1 and "maximized" or "fullscreen", action = "unset", window = cover}))
+                end
+                apply(hl.dsp.window.fullscreen({mode = "maximized", action = "set", window = selector}))
+            end
+        elseif state ~= 0 then
+            apply(hl.dsp.window.fullscreen({mode = state == 1 and "maximized" or "fullscreen", action = "unset", window = selector}))
+        end
     elseif action == "restore" then
         local minimized = is_minimized(window)
         -- The overlay omits was_minimized: either state is valid when its own

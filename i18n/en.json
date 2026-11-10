@@ -1,7 +1,13 @@
 {
   "deck.area": "Workspace %1",
-  "deck.windows": {"one": "%1 window", "other": "%1 windows"},
-  "deck.minimizedCount": {"one": "%1 minimized", "other": "%1 minimized"},
+  "deck.windows": {
+    "one": "%1 window",
+    "other": "%1 windows"
+  },
+  "deck.minimizedCount": {
+    "one": "%1 minimized",
+    "other": "%1 minimized"
+  },
   "deck.minimized": "Minimized",
   "deck.empty": "No windows in this workspace",
   "deck.emptyMinimized": "No minimized windows in this workspace",
@@ -16,5 +22,12 @@
   "deck.connectionError": "Could not read windows. Try again.",
   "deck.retry": "Try again",
   "bar.restore": "Restore %1",
-  "bar.more": "Show %1 more minimized windows"
+  "bar.more": "Show %1 more minimized windows",
+  "deck.maximized": "Maximized",
+  "deck.manage": "minimize / maximize",
+  "deck.workspace": "workspace",
+  "deck.action.hide": "Minimize window",
+  "deck.action.maximize": "Maximize window",
+  "deck.action.unmaximize": "Restore window size",
+  "deck.action.show": "Restore window to its workspace"
 }
