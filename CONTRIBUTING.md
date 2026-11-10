@@ -1,6 +1,6 @@
 # Contribuir
 
-O runtime usa somente as dependências do Omarchy. Para os testes de desenvolvimento, são necessários Python 3, Node.js e o interpretador `lua`. Os testes visuais também exigem Quickshell e os módulos do Omarchy instalados.
+O runtime usa somente as dependências do Omarchy: QML no shell e Lua dentro do Hyprland, sem Python. Para os testes e scripts de desenvolvimento, são necessários Python 3, Node.js e o interpretador `lua`. Os testes visuais também exigem Quickshell e os módulos do Omarchy instalados.
 
 O teste de composição de captura usa `qmake6`, compilador C++, `make` e os módulos de desenvolvimento e runtime QML do Qt Quick. No Ubuntu: `qt6-declarative-dev`, `qml6-module-qtquick`, `qml6-module-qtqml`, `qml6-module-qtqml-models` e `qml6-module-qtqml-workerscript`. Ele roda sem compositor, com uma textura que reproduz a importação DMA-BUF do Quickshell: pixels transparentes declarados como opacos. Isso verifica que o fundo continua sólido nos cartões de janelas Glassy, em temas claros e escuros, sem depender de capturas pessoais.
 
@@ -8,7 +8,7 @@ O teste de composição de captura usa `qmake6`, compilador C++, `make` e os mó
 
 Edite os arquivos fonte na raiz e os catálogos em `i18n/`. Preserve o id `eusener.window-deck`, o isolamento por área/monitor e os tokens compartilhados de `qs.Commons`. Títulos de janelas são dados externos e devem permanecer em texto simples.
 
-Depois de alterar QML, JS, Lua, backend ou traduções, gere novamente a cópia distribuída:
+Depois de alterar QML, JS, Lua ou traduções, gere novamente a cópia distribuída:
 
 ```bash
 python3 scripts/build-runtime.py

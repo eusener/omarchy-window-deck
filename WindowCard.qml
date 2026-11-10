@@ -56,6 +56,12 @@ Item {
             id: liveCapture
             Item {
                 readonly property bool hasContent: capture.hasContent
+                // Behind transparent pixels: the wallpaper, following Hyprland's blur.
+                WindowBackdrop {
+                    anchors.fill: capture
+                    visible: capture.visible
+                    record: root.record
+                }
                 WindowCapture {
                     id: capture
                     captureSource: root.captureEnabled ? root.toplevel : null

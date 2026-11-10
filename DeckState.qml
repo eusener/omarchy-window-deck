@@ -12,8 +12,18 @@ Item {
     property string error: ""
     property bool pending: false
     readonly property bool busy: !!actionProcess && actionProcess.running === true
-    readonly property string backendPath: decodeURIComponent(String(Qt.resolvedUrl("backend.py")).replace(/^file:\/\//, ""))
+    // Restores run inside the compositor: hyprctl eval loads this file there.
+    readonly property string operationsPath: decodeURIComponent(String(Qt.resolvedUrl("operations.lua")).replace(/^file:\/\//, ""))
+    // What a transparent window shows behind it: the current wallpaper, blurred
+    // when Hyprland's blur is on (the Glassy toggle), exactly as on the desktop.
+    property string wallpaperPath: ""
+    property var blur: Model.parseBlur("")
+    readonly property string stateHome: Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")
     signal actionFinished(bool success)
+
+    function refreshAppearance() {
+        if (!appearanceProcess.running) appearanceProcess.running = true;
+    }
 
     function refresh() {
         if (snapshotProcess.running) { pending = true; return; }
@@ -23,7 +33,11 @@ Item {
 
     function act(action, address, workspace) {
         if (busy || action !== "restore") return false;
-        actionProcess.command = ["python3", backendPath, action, address, String(workspace)];
+        // State, origin and existence are validated by the compositor in the
+        // same call that moves and focuses the window.
+        var chunk = Model.restoreChunk(operationsPath, address, workspace);
+        if (!chunk) { error = "action"; return false; }
+        actionProcess.command = ["hyprctl", "eval", chunk];
         actionProcess.running = true;
         return true;
     }
@@ -40,14 +54,13 @@ Item {
 
     Process {
         id: snapshotProcess
-        command: ["python3", root.backendPath, "snapshot"]
+        command: ["hyprctl", "-j", "clients"]
         stdout: StdioCollector {
             onStreamFinished: {
-                try {
-                    var data = JSON.parse(text);
-                    if (Array.isArray(data.clients)) { root.clients = data.clients; root.error = ""; }
-                    else root.error = "unavailable";
-                } catch (e) { root.error = "unavailable"; }
+                var rows = null;
+                try { rows = Model.normalizeClients(JSON.parse(text)); } catch (e) {}
+                if (rows) { root.clients = rows; root.error = ""; }
+                else root.error = "unavailable";
             }
         }
         onExited: function(exitCode) {
@@ -65,6 +78,22 @@ Item {
         }
     }
 
+    Process {
+        id: appearanceProcess
+        command: ["sh", "-c", "printf '%s\\n' \"$(readlink -f -- \"$1\")\"; hyprctl -j --batch \"$2\"", "_",
+            root.stateHome + "/omarchy/current/background",
+            "getoption decoration:blur:enabled; getoption decoration:blur:size; getoption decoration:blur:passes; "
+            + "getoption decoration:blur:brightness; getoption decoration:blur:contrast"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var newline = text.indexOf("\n");
+                var path = newline < 0 ? "" : text.slice(0, newline).trim();
+                if (path !== root.wallpaperPath) root.wallpaperPath = path;
+                root.blur = Model.parseBlur(newline < 0 ? "" : text.slice(newline + 1));
+            }
+        }
+    }
+
     Timer { id: debounce; interval: 90; onTriggered: root.refresh() }
     Connections {
         target: Hyprland
@@ -72,7 +101,9 @@ Item {
             var name = event ? String(event.name) : "";
             if (Model.shouldRefresh(name))
                 debounce.restart();
+            if (name === "configreloaded")
+                root.refreshAppearance();
         }
     }
-    Component.onCompleted: refresh()
+    Component.onCompleted: { refresh(); refreshAppearance(); }
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0
+
+- Remove o backend Python. Super+M e Super+Ctrl+M rodam como funções Lua dentro do Hyprland, sem iniciar processos; antes cada atalho levava cerca de 130 ms só para iniciar o Python.
+- O seletor e a barra leem as janelas com `hyprctl -j clients` e restauram com `hyprctl eval`, sem Python. A normalização das janelas fica em `Model.js` e todas as validações de estado e origem continuam na mesma chamada Lua que move a janela.
+- Os atalhos recarregam `operations.lua` a cada uso, então atualizações do plugin valem sem `hyprctl reload`. Sem o plugin instalado, os atalhos padrão voltam.
+- O fundo das miniaturas de janelas transparentes segue a opção de blur do Hyprland, ligada pelo modo Glassy. Atrás da janela aparece o trecho do papel de parede que fica atrás dela no desktop: desfocado e com o brilho e contraste do blur quando ele está ligado, nítido quando está desligado. Sem papel de parede estático (vídeo ou arquivo ausente), continua a cor de fundo do tema.
+- **Migração:** substitua as linhas de Super+M e Super+Ctrl+M em `bindings.lua` pelo bloco novo do README. As linhas antigas apontam para `backend.py`, que não existe mais.
+
 ## 1.3.2
 
 - Evita reiniciar todas as capturas do Super+Tab quando títulos e outros metadados das janelas são atualizados, reduzindo o flicker durante atualizações frequentes.

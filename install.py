@@ -89,15 +89,23 @@ def marker_for(plugin):
         raise InstallError(f"Existing directory is not owned by this installer: {plugin}") from exc
 
 
+def lua_string(value):
+    """A Lua string literal carrying any text as data."""
+    return '"' + "".join(f"\\{ord(c):03d}" if c in '\\"' or ord(c) < 32 or ord(c) == 127 else c for c in value) + '"'
+
+
 def binding_block(plugin):
-    minimize = shlex.join(["python3", str(plugin / "backend.py"), "minimize"])
-    restore = shlex.join(["python3", str(plugin / "backend.py"), "restore-last"])
     summon = "omarchy-shell shell summon eusener.window-deck '{}'"
+    operations = lua_string(str(plugin / "operations.lua"))
     return (BEGIN + "\n"
             '-- Super+Tab replaces Next workspace; Super+M minimizes in either layout.\n'
+            '-- Minimize and restore run inside Hyprland; no process is started.\n'
             f'o.rebind("SUPER + TAB", "Window Deck", {json.dumps(summon, ensure_ascii=False)})\n'
-            f'o.rebind("SUPER + M", "Minimizar janela", {json.dumps(minimize, ensure_ascii=False)})\n'
-            f'o.rebind("SUPER + CTRL + M", "Restaurar janela", {json.dumps(restore, ensure_ascii=False)})\n'
+            f'local window_deck_ok, window_deck = pcall(dofile, {operations})\n'
+            'if window_deck_ok then\n'
+            '  o.rebind("SUPER + M", "Minimizar janela", window_deck.shortcut("minimize"))\n'
+            '  o.rebind("SUPER + CTRL + M", "Restaurar janela", window_deck.shortcut("restore_last"))\n'
+            'end\n'
             'o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))\n'
             + END + "\n")
 
@@ -129,7 +137,7 @@ def is_our_entry(entry):
 def copy_runtime(source, stage):
     source = Path(source)
     files = list(source.glob("*.qml")) + list(source.glob("*.js")) + list(source.glob("*.lua"))
-    files += [source / name for name in ("manifest.json", "qmldir", "backend.py", "install.py")]
+    files += [source / name for name in ("manifest.json", "qmldir", "install.py")]
     for optional in ("README.md", "LICENSE"):
         if (source / optional).is_file():
             files.append(source / optional)
@@ -143,7 +151,7 @@ def build_runtime(stage):
     """Use immutable entry-point URLs; QML engines retain same-path singletons."""
     manifest = json.loads((stage / "manifest.json").read_text(encoding="utf-8"))
     files = list(stage.glob("*.qml")) + list(stage.glob("*.js")) + list(stage.glob("*.lua"))
-    files += [stage / "backend.py", stage / "qmldir"]
+    files += [stage / "qmldir"]
     files += list((stage / "i18n").glob("*.json"))
     digest = hashlib.sha256(manifest["version"].encode())
     for file in sorted(files):

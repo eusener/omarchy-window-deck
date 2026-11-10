@@ -9,7 +9,7 @@ A prévia usa os componentes reais com janelas ilustrativas. [Ver os ícones da 
 ## Requisitos
 
 - Omarchy com `omarchy-shell` Quickshell, plugins e configuração Lua do Hyprland.
-- Python 3 e `hyprctl`, disponíveis na instalação do Omarchy.
+- `hyprctl`, disponível na instalação do Omarchy. O runtime não usa Python.
 - Testado com a API Lua do Hyprland 0.56.2. Outros shells e configurações legadas em hyprlang não são suportados.
 
 Não há pacotes adicionais para instalar. O plugin não usa rede e não grava miniaturas em disco.
@@ -29,14 +29,19 @@ O repositório já contém o runtime pronto, o manifesto na raiz e as traduçõe
 
 ### Atalhos
 
-Confira os atalhos atuais com `omarchy menu keybindings --print`. Acrescente estas quatro linhas a `~/.config/hypr/bindings.lua`:
+Confira os atalhos atuais com `omarchy menu keybindings --print`. Acrescente este bloco a `~/.config/hypr/bindings.lua`:
 
 ```lua
 o.rebind("SUPER + TAB", "Window Deck", "omarchy-shell shell summon eusener.window-deck '{}'")
-o.rebind("SUPER + M", "Minimizar janela", 'python3 "$HOME/.config/omarchy/plugins/eusener.window-deck/backend.py" minimize')
-o.rebind("SUPER + CTRL + M", "Restaurar janela", 'python3 "$HOME/.config/omarchy/plugins/eusener.window-deck/backend.py" restore-last')
+local window_deck_ok, window_deck = pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/eusener.window-deck/operations.lua")
+if window_deck_ok then
+  o.rebind("SUPER + M", "Minimizar janela", window_deck.shortcut("minimize"))
+  o.rebind("SUPER + CTRL + M", "Restaurar janela", window_deck.shortcut("restore_last"))
+end
 o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))
 ```
+
+Minimizar e restaurar rodam dentro do Hyprland, sem iniciar nenhum processo. Cada tecla carrega a versão atual de `operations.lua`, então uma atualização do plugin vale sem `hyprctl reload`. Se o plugin for removido, Super+M e Super+Ctrl+M voltam aos atalhos padrão no próximo reload. O menu de atalhos do Omarchy continua conseguindo executar esses atalhos.
 
 Super+Tab substitui **Next workspace**. Super+M substitui a minimização nativa para funcionar também em áreas em mosaico. Super+Shift+Tab e Super+Ctrl+Tab mantêm suas ações fora do seletor. Aplicar e conferir:
 
@@ -86,7 +91,7 @@ As entradas da interface apontam para um diretório `runtime/` identificado pela
 omarchy plugin disable eusener.window-deck
 ```
 
-Para remover, retire primeiro as quatro linhas adicionadas em `bindings.lua`, rode `hyprctl reload` e `hyprctl configerrors`, depois:
+Para remover, retire primeiro o bloco adicionado em `bindings.lua`, rode `hyprctl reload` e `hyprctl configerrors`, depois:
 
 ```bash
 omarchy plugin remove eusener.window-deck
@@ -109,6 +114,8 @@ O `install.py` continua no repositório para compatibilidade com essas cópias e
 ## Miniaturas e limites
 
 A captura usa a [API ScreencopyView do Quickshell](https://quickshell.org/docs/v0.3.1/types/Quickshell.Wayland/ScreencopyView/) somente nos cartões próximos enquanto o seletor está aberto. Janelas minimizadas, protegidas ou sem suporte de captura podem apresentar apenas ícone, título e “Prévia indisponível”. O plugin não restaura janelas temporariamente para capturá-las.
+
+Em janelas transparentes, como terminais no modo Glassy, a miniatura mostra atrás da janela o trecho do papel de parede que fica atrás dela no desktop. Com o blur do Hyprland ligado, esse fundo aparece desfocado; desligado, aparece nítido. O desfoque da miniatura é uma aproximação do blur do Hyprland.
 
 A minimização segue a convenção do Omarchy: workspace `special:minimized` e tag `omarchy-minimized-from-N`. Origens inválidas ou ambíguas não são inventadas. Janelas sem origem válida ficam fora do filtro e continuam recuperáveis pelo dock. Mudanças concorrentes são validadas dentro de uma única operação Lua antes de mover ou focalizar uma janela.
 

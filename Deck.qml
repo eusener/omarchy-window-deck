@@ -44,6 +44,7 @@ Item {
         opened = true;
         rebuild();
         DeckState.refresh();
+        DeckState.refreshAppearance();
         Qt.callLater(view.focusPicker);
     }
     function close() { opened = false; confirming = false; }
