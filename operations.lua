@@ -38,6 +38,33 @@ local function is_minimized(window)
     return window.workspace ~= nil and window.workspace.name == MINIMIZED
 end
 
+-- The maximized or fullscreen window that would cover `address` on a workspace.
+local function covering_window(workspace_id, address)
+    for _, other in ipairs(hl.get_windows() or {}) do
+        if other.address ~= address and other.mapped and other.workspace and other.workspace.id == workspace_id
+            and type(other.fullscreen) == "number" and other.fullscreen ~= 0 then
+            return other
+        end
+    end
+end
+
+-- Choosing a window must show it. The overlay still holds exclusive keyboard
+-- focus when it restores, so Hyprland does not apply on_focus_under_fullscreen
+-- to that focus request and the window would stay behind a maximized one.
+-- Apply the setting here: 1 hands the maximized or fullscreen state over to
+-- the chosen window; any other value only clears it, since an explicit choice
+-- is never ignored.
+local function uncover(selector, address, workspace_id)
+    local cover = covering_window(workspace_id, address)
+    if not cover then return end
+    local mode = cover.fullscreen == 1 and "maximized" or "fullscreen"
+    local ok, setting = pcall(hl.get_config, "misc:on_focus_under_fullscreen")
+    apply(hl.dsp.window.fullscreen({mode = mode, action = "unset", window = cover}))
+    if not ok or setting == 1 then
+        apply(hl.dsp.window.fullscreen({mode = mode, action = "set", window = selector}))
+    end
+end
+
 function M.execute(action, address, expected_workspace, was_minimized)
     if action == "restore-last" then
         local active = hl.get_active_workspace()
@@ -80,6 +107,7 @@ function M.execute(action, address, expected_workspace, was_minimized)
         else
             assert(workspace.id == expected_workspace, "Window moved")
         end
+        uncover(selector, address, expected_workspace)
         apply(hl.dsp.focus({window = selector}))
         if window.floating then
             apply(hl.dsp.window.alter_zorder({mode = "top", window = selector}))

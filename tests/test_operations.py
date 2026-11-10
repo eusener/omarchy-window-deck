@@ -39,6 +39,7 @@ class OperationTests(unittest.TestCase):
         self.focused = None
         self.active_workspace = 2
         self.fail_kind = ""
+        self.focus_under_fullscreen = 1
 
     def run_lua(self, call):
         lua = f'''
@@ -54,6 +55,10 @@ function hl.get_window(selector)
 end
 function hl.get_active_workspace() return {{id={lua_value(self.active_workspace)}}} end
 function hl.get_active_window() return {lua_value(self.focused)} end
+function hl.get_config(name)
+    assert(name == "misc:on_focus_under_fullscreen")
+    return {lua_value(self.focus_under_fullscreen)}
+end
 function hl.dispatch(operation)
     if operation.kind == {lua_value(self.fail_kind)} then return {{ok=false,error="rejected"}} end
     local args = operation.args
@@ -164,6 +169,37 @@ io.write(tostring(ok and value ~= false))
         ok, effects = self.run_lua("deck.execute('restore', '0xabc', 2, false)")
         self.assertFalse(ok)
         self.assertEqual(effects, [])
+
+    def test_chosen_window_takes_over_a_maximized_window(self):
+        # Reproduces choosing a minimized window in the overlay while another
+        # window of the workspace is maximized: it stayed hidden behind it.
+        self.windows = [window(workspace=-99, tags=["omarchy-minimized-from-2"]), window("0xdef", fullscreen=1)]
+        ok, effects = self.restore()
+        self.assertTrue(ok)
+        self.assertEqual(effects, ["move:2", "fullscreen:address:0xdef:maximized:unset",
+                                   "fullscreen:address:0xabc:maximized:set", "focus:address:0xabc"])
+
+    def test_chosen_tiled_window_takes_over_fullscreen_with_the_same_mode(self):
+        self.windows = [window(), window("0xdef", fullscreen=2)]
+        ok, effects = self.restore()
+        self.assertTrue(ok)
+        self.assertEqual(effects, ["fullscreen:address:0xdef:fullscreen:unset",
+                                   "fullscreen:address:0xabc:fullscreen:set", "focus:address:0xabc"])
+
+    def test_other_focus_under_fullscreen_settings_only_uncover_the_window(self):
+        for setting in (0, 2):
+            self.focus_under_fullscreen = setting
+            self.windows = [window(workspace=-99, tags=["omarchy-minimized-from-2"]), window("0xdef", fullscreen=1)]
+            with self.subTest(setting=setting):
+                ok, effects = self.restore()
+                self.assertTrue(ok)
+                self.assertEqual(effects, ["move:2", "fullscreen:address:0xdef:maximized:unset", "focus:address:0xabc"])
+
+    def test_maximized_windows_elsewhere_or_the_chosen_one_are_left_alone(self):
+        self.windows = [window(fullscreen=1), window("0xdef", 3, fullscreen=1), window("0x123", fullscreen=1, mapped=False)]
+        ok, effects = self.restore()
+        self.assertTrue(ok)
+        self.assertEqual(effects, ["focus:address:0xabc"])
 
     # Super+Ctrl+M
 
