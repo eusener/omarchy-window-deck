@@ -107,6 +107,8 @@ def binding_block(plugin):
             '  o.rebind("SUPER + CTRL + M", "Restaurar janela", window_deck.shortcut("restore_last"))\n'
             'end\n'
             'o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))\n'
+            '-- Glass behind the picker, like Omarchy\'s own overlays; only while blur is on.\n'
+            'hl.layer_rule({ match = { namespace = "^eusener-window-deck$" }, blur = true, ignore_alpha = 0.3 })\n'
             + END + "\n")
 
 

@@ -39,9 +39,10 @@ if window_deck_ok then
   o.rebind("SUPER + CTRL + M", "Restaurar janela", window_deck.shortcut("restore_last"))
 end
 o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))
+hl.layer_rule({ match = { namespace = "^eusener-window-deck$" }, blur = true, ignore_alpha = 0.3 })
 ```
 
-Minimizar e restaurar rodam dentro do Hyprland, sem iniciar nenhum processo. Cada tecla carrega a versão atual de `operations.lua`, então uma atualização do plugin vale sem `hyprctl reload`. Se o plugin for removido, Super+M e Super+Ctrl+M voltam aos atalhos padrão no próximo reload. O menu de atalhos do Omarchy continua conseguindo executar esses atalhos.
+Minimizar e restaurar rodam dentro do Hyprland, sem iniciar nenhum processo. Cada tecla carrega a versão atual de `operations.lua`, então uma atualização do plugin vale sem `hyprctl reload`. Se o plugin for removido, Super+M e Super+Ctrl+M voltam aos atalhos padrão no próximo reload. O menu de atalhos do Omarchy continua conseguindo executar esses atalhos. A última linha desfoca o que fica atrás do seletor, como nos overlays do próprio Omarchy. Ela só tem efeito com o blur do Hyprland ligado, pelo modo Glassy.
 
 Super+Tab substitui **Next workspace**. Super+M substitui a minimização nativa para funcionar também em áreas em mosaico. Super+Shift+Tab e Super+Ctrl+Tab mantêm suas ações fora do seletor. Aplicar e conferir:
 

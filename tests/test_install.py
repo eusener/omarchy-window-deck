@@ -53,7 +53,9 @@ class InstallTests(unittest.TestCase):
         script = '''
 local bindings = {}
 o = {bind_expressions = {}, rebind = function(keys, label, action) bindings[keys] = action end}
-hl = {dsp = {window = {fullscreen = function(options) return options end}}}
+local layer_rules = {}
+hl = {dsp = {window = {fullscreen = function(options) return options end}},
+      layer_rule = function(rule) layer_rules[#layer_rules + 1] = rule end}
 local active_calls = 0
 function hl.get_active_window() active_calls = active_calls + 1 return nil end
 ''' + block + after
@@ -69,6 +71,7 @@ local maximize = bindings["SUPER + CTRL + SHIFT + M"]
 assert(type(maximize) == "table" and maximize.mode == "maximized" and maximize.action == "set")
 minimize()
 assert(active_calls == 1, "shortcut reaches the compositor-side module")
+assert(#layer_rules == 1 and layer_rules[1].match.namespace == "^eusener-window-deck$" and layer_rules[1].blur == true)
 -- The keybindings menu replays the bind through this expression.
 local replay = assert(load("return " .. o.bind_expressions[bindings["SUPER + CTRL + M"]]))()
 assert(type(replay) == "function")

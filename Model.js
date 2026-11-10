@@ -104,10 +104,12 @@ function backdropGeometry(record, monitor, width) {
 }
 
 // Hyprland's blur radius in logical pixels, mapped to a preview at `scale`.
-// Each Kawase pass doubles the reach of the configured size.
+// Each Kawase pass doubles the reach of the configured size; the factor 3 was
+// matched against a grim capture of a Glassy terminal (size 4, 2 passes,
+// scale 2), which compares to a MultiEffect blur of about 48 px.
 function blurRadius(blur, scale) {
     if (!blur || !blur.enabled || !(scale > 0)) return 0;
-    return Math.max(1, Math.min(64, Math.round(blur.size * Math.pow(2, blur.passes) * scale)));
+    return Math.max(1, Math.min(64, Math.round(blur.size * Math.pow(2, blur.passes) * 3 * scale)));
 }
 
 // A Lua string literal that carries any text as data.

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Effects
 import qs.Commons as Commons
 import "Model.js" as Model
 
@@ -37,11 +38,12 @@ Item {
     Rectangle { anchors.fill: parent; color: DeckPalette.scrim }
     MouseArea { anchors.fill: parent; onClicked: root.cancelled() }
 
-    Rectangle {
-        id: panelShadow
-        x: panel.x - 10; y: panel.y + 10
-        width: panel.width + 20; height: panel.height + 10
-        radius: DeckPalette.px(32)
+    RectangularShadow {
+        anchors.fill: panel
+        visible: DeckPalette.panelOpaque
+        radius: panel.radius
+        offset: Qt.vector2d(0, DeckPalette.px(10))
+        blur: DeckPalette.px(36)
         color: DeckPalette.shadow
     }
     Rectangle {

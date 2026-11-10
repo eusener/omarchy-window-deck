@@ -20,5 +20,9 @@ QtObject {
     readonly property string fontFamily: Style.font.menuFamily
     readonly property string monoFamily: Style.font.family
     readonly property real fontScale: Math.max(0.85, Style.fontBaseSize / 12)
+    // A shadow behind a see-through surface shows through it, so only opaque
+    // surfaces cast one, as in Omarchy's own menus.
+    readonly property bool panelOpaque: Commons.Color.menu.background.a > 0.99
+    readonly property bool surfaceOpaque: surface.a > 0.99
     function px(value) { return Math.round(value * fontScale); }
 }

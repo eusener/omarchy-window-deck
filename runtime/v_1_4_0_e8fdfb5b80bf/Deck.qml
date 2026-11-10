@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Wayland
 import qs.Ui
 import "Model.js" as Model
 
@@ -135,6 +136,9 @@ Item {
     OverlayWindow {
         id: overlay
         shown: root.opened
+        // Hyprland blurs behind this namespace through the layer rule of the
+        // README, which takes effect only while blur is on (the Glassy mode).
+        WlrLayershell.namespace: "eusener-window-deck"
         onContentRevealedChanged: if (contentRevealed) view.focusPicker()
         function focusedScreen() {
             for (var i = 0; i < Quickshell.screens.length; i++)

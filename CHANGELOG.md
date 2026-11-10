@@ -7,7 +7,8 @@
 - Os atalhos recarregam `operations.lua` a cada uso, então atualizações do plugin valem sem `hyprctl reload`. Sem o plugin instalado, os atalhos padrão voltam.
 - O fundo das miniaturas de janelas transparentes segue a opção de blur do Hyprland, ligada pelo modo Glassy. Atrás da janela aparece o trecho do papel de parede que fica atrás dela no desktop: desfocado e com o brilho e contraste do blur quando ele está ligado, nítido quando está desligado. Sem papel de parede estático (vídeo ou arquivo ausente), continua a cor de fundo do tema.
 - Corrige a escolha de uma janela no seletor quando outra janela da área está maximizada ou em tela cheia: a escolhida ficava escondida atrás dela. Ao fechar, o seletor devolvia o foco à janela anterior, que retomava a maximização. Agora a restauração acontece depois que o seletor fecha, e a janela escolhida assume a maximização, seguindo `misc:on_focus_under_fullscreen = 1` do Omarchy; com outros valores, a maximizada só é desfeita.
-- **Migração:** substitua as linhas de Super+M e Super+Ctrl+M em `bindings.lua` pelo bloco novo do README. As linhas antigas apontam para `backend.py`, que não existe mais.
+- O seletor ganha vidro como os overlays do Omarchy: com o blur do Hyprland ligado (modo Glassy), o que fica atrás dele é desfocado. A sombra do painel e dos cartões fica suave e só aparece em superfícies opacas; antes era um retângulo sólido que vazava através do vidro.
+- **Migração:** substitua as linhas de Super+M e Super+Ctrl+M em `bindings.lua` pelo bloco novo do README, que também traz a regra de blur do seletor. As linhas antigas apontam para `backend.py`, que não existe mais.
 
 ## 1.3.2
 

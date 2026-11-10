@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Effects
 import qs.Commons as Commons
 
 Item {
@@ -16,10 +17,12 @@ Item {
     readonly property real inset: DeckPalette.px(10)
     Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
 
-    Rectangle {
-        x: -5; y: 8
-        width: parent.width + 10; height: parent.height + 8
-        radius: DeckPalette.px(22)
+    RectangularShadow {
+        anchors.fill: parent
+        visible: DeckPalette.surfaceOpaque
+        radius: DeckPalette.px(18)
+        offset: Qt.vector2d(0, DeckPalette.px(8))
+        blur: DeckPalette.px(24)
         color: DeckPalette.shadow
     }
     Rectangle {

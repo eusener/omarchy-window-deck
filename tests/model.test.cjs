@@ -110,8 +110,8 @@ test('backdrop places the monitor wallpaper behind the window at preview scale',
 });
 test('blur radius follows the Hyprland setting and is off when blur is disabled', () => {
   const blur = { enabled: true, size: 4, passes: 2 };
-  assert.equal(M.blurRadius(blur, 1), 16);
-  assert.equal(M.blurRadius(blur, 0.5), 8);
+  assert.equal(M.blurRadius(blur, 1), 48);
+  assert.equal(M.blurRadius(blur, 0.25), 12);
   assert.equal(M.blurRadius(blur, 0.01), 1);
   assert.equal(M.blurRadius({ enabled: true, size: 64, passes: 8 }, 1), 64);
   assert.equal(M.blurRadius({ ...blur, enabled: false }, 1), 0);
