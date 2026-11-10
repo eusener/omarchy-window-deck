@@ -17,6 +17,9 @@ Item {
     property string selectedAddress: ""
     property string previousAddress: ""
     property bool confirming: false
+    // A chosen window waiting for the overlay surface to close.
+    property string pendingAddress: ""
+    property int pendingWorkspace: -1
     property string actionError: ""
     property var windows: []
 
@@ -63,7 +66,31 @@ Item {
         selectedAddress = windows.length ? windows[index].address : "";
     }
     function confirm(record) {
-        if (DeckState.act("restore", record.address, workspaceId)) confirming = true;
+        if (DeckState.busy || pendingAddress) return;
+        // While the overlay holds exclusive keyboard focus Hyprland ignores the
+        // focus request, and on closing it refocuses the window focused before
+        // it opened, which then retakes a maximized state over the chosen one.
+        // Restore only once the overlay surface is gone.
+        pendingAddress = record.address;
+        pendingWorkspace = workspaceId;
+        dismiss();
+        pendingTimer.restart();
+    }
+    function runPending() {
+        if (!pendingAddress) return;
+        var address = pendingAddress;
+        pendingAddress = "";
+        pendingTimer.stop();
+        if (DeckState.act("restore", address, pendingWorkspace)) confirming = true;
+        else reopenWithError();
+    }
+    // The overlay is already closed when a restore fails; show the error in it.
+    function reopenWithError() {
+        actionError = "action";
+        opened = true;
+        rebuild();
+        Qt.callLater(view.focusPicker);
+        Qt.callLater(checkContext);
     }
     function cancel() {
         var previous = DeckState.clients.filter(function(w) { return w.address === previousAddress && w.origin === workspaceId && !w.minimized; });
@@ -88,14 +115,19 @@ Item {
         function onActionFinished(success) {
             if (!root.confirming) return;
             root.confirming = false;
-            if (success) root.dismiss();
-            else { root.actionError = "action"; view.focusPicker(); }
+            if (!success) root.reopenWithError();
         }
     }
     Connections {
         target: Hyprland
-        function onRawEvent(event) { if (root.opened) Qt.callLater(root.checkContext); }
+        function onRawEvent(event) {
+            if (root.opened) Qt.callLater(root.checkContext);
+            // Hyprland has refocused the previous window when it reports this.
+            if (root.pendingAddress && event && String(event.name) === "closelayer") Qt.callLater(root.runPending);
+        }
     }
+    // Fallback when the close event is missed, as when the surface never mapped.
+    Timer { id: pendingTimer; interval: 400; onTriggered: root.runPending() }
     Connections {
         target: Quickshell
         function onScreensChanged() { root.checkContext(); }
