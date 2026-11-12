@@ -1,6 +1,5 @@
 import importlib.util
 import json
-import shlex
 import shutil
 import subprocess
 from pathlib import Path
@@ -49,24 +48,46 @@ class InstallTests(unittest.TestCase):
         self.install()
         self.assertEqual(first, (self.shell.read_text(), self.bindings.read_text()))
 
-    def test_window_shortcuts_dispatch_restore_and_native_maximize(self):
-        self.install()
-        target = self.root / 'omarchy/plugins' / installer.PLUGIN_ID
+    def run_block(self, after):
         block = installer.BLOCK.search(self.bindings.read_text()).group()
         script = '''
 local bindings = {}
-o = {rebind = function(keys, label, action) bindings[keys] = action end}
-hl = {dsp = {window = {fullscreen = function(options) return options end}}}
-''' + block + '''
-assert(type(bindings["SUPER + M"]) == "string")
-assert(type(bindings["SUPER + CTRL + M"]) == "string")
+o = {bind_expressions = {}, rebind = function(keys, label, action) bindings[keys] = action end}
+local layer_rules = {}
+hl = {dsp = {window = {fullscreen = function(options) return options end}},
+      layer_rule = function(rule) layer_rules[#layer_rules + 1] = rule end}
+local active_calls = 0
+function hl.get_active_window() active_calls = active_calls + 1 return nil end
+''' + block + after
+        return subprocess.run(['lua', '-'], input=script, text=True, capture_output=True)
+
+    def test_window_shortcuts_run_inside_hyprland_and_keep_native_maximize(self):
+        self.install()
+        target = self.root / 'omarchy/plugins' / installer.PLUGIN_ID
+        result = self.run_block('''
+local minimize = bindings["SUPER + M"]
+assert(type(minimize) == "function" and type(bindings["SUPER + CTRL + M"]) == "function")
 local maximize = bindings["SUPER + CTRL + SHIFT + M"]
 assert(type(maximize) == "table" and maximize.mode == "maximized" and maximize.action == "set")
-io.write(bindings["SUPER + CTRL + M"])
-'''
-        result = subprocess.run(['lua', '-'], input=script, text=True, capture_output=True)
+minimize()
+assert(active_calls == 1, "shortcut reaches the compositor-side module")
+assert(#layer_rules == 1 and layer_rules[1].match.namespace == "^eusener-window-deck$" and layer_rules[1].blur == true)
+-- The keybindings menu replays the bind through this expression.
+local replay = assert(load("return " .. o.bind_expressions[bindings["SUPER + CTRL + M"]]))()
+assert(type(replay) == "function")
+io.write(o.bind_expressions[minimize])
+''')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(shlex.split(result.stdout), ['python3', str(target / 'backend.py'), 'restore-last'])
+        self.assertIn(str(target / 'operations.lua'), result.stdout)
+
+    def test_shortcuts_fall_back_to_defaults_when_the_plugin_is_removed(self):
+        self.install()
+        shutil.rmtree(self.root / 'omarchy/plugins' / installer.PLUGIN_ID)
+        result = self.run_block('''
+assert(bindings["SUPER + M"] == nil and bindings["SUPER + CTRL + M"] == nil)
+assert(type(bindings["SUPER + TAB"]) == "string")
+''')
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_ui_updates_get_fresh_entry_urls_for_the_running_qml_engine(self):
         with tempfile.TemporaryDirectory(prefix='deck-source-') as directory:
@@ -85,7 +106,7 @@ io.write(bindings["SUPER + CTRL + M"])
             self.assertTrue((runtime / 'DeckPalette.qml').is_file())
             self.assertTrue((runtime / 'qmldir').is_file())
             self.assertTrue((runtime / 'Model.js').is_file())
-            self.assertTrue((runtime / 'backend.py').is_file())
+            self.assertFalse((runtime / 'backend.py').exists())
             self.assertTrue((runtime / 'operations.lua').is_file())
             self.assertTrue((runtime / 'i18n/pt-BR.json').is_file())
             installer.install(self.root, source)

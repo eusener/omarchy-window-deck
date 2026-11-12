@@ -30,7 +30,7 @@ def main():
     for file in ROOT.rglob("*"):
         if ".git" not in file.relative_to(ROOT).parts and file.is_symlink():
             raise ValueError(f"Plugin contains a symlink: {file.relative_to(ROOT)}")
-    for relative in ("LICENSE", "README.md", "CHANGELOG.md", "backend.py", "operations.lua", "docs/preview.png"):
+    for relative in ("LICENSE", "README.md", "CHANGELOG.md", "operations.lua", "docs/preview.png"):
         if not (ROOT / relative).is_file():
             raise ValueError(f"Missing publication file: {relative}")
     for locale in ("en", "pt-BR"):

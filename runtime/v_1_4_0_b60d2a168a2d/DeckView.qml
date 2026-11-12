@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Effects
 import qs.Commons as Commons
 import "Model.js" as Model
 
@@ -7,6 +8,9 @@ Item {
     id: root
     property var windows: []
     property int workspaceId: 1
+    property int activeWorkspace: workspaceId
+    // Windows per slot (1-10) of the monitor's block.
+    property var slotCounts: []
     property int selectedIndex: 0
     property bool minimizedOnly: false
     property bool busy: false
@@ -22,6 +26,8 @@ Item {
     signal cancelled()
     signal selectionRequested(int index)
     signal retryRequested()
+    signal workspaceRequested(int slot)
+    signal manageRequested(string action)
     readonly property int minimizedCount: windows.filter(function(w) { return w.minimized; }).length
     Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
 
@@ -33,15 +39,21 @@ Item {
         if (windows.length && !busy) accepted(windows[selectedIndex]);
     }
     function focusPicker() { keys.forceActiveFocus(); }
+    function manageSelected(direction) {
+        if (!windows.length || busy) return;
+        var action = Model.ladderAction(windows[selectedIndex], direction);
+        if (action) manageRequested(action);
+    }
 
     Rectangle { anchors.fill: parent; color: DeckPalette.scrim }
     MouseArea { anchors.fill: parent; onClicked: root.cancelled() }
 
-    Rectangle {
-        id: panelShadow
-        x: panel.x - 10; y: panel.y + 10
-        width: panel.width + 20; height: panel.height + 10
-        radius: DeckPalette.px(32)
+    RectangularShadow {
+        anchors.fill: panel
+        visible: DeckPalette.panelOpaque
+        radius: panel.radius
+        offset: Qt.vector2d(0, DeckPalette.px(10))
+        blur: DeckPalette.px(36)
         color: DeckPalette.shadow
     }
     Rectangle {
@@ -76,6 +88,48 @@ Item {
                     text: strings.t("deck.area").arg(Commons.I18n.formatNumber(Model.slot(root.workspaceId)))
                     font.pixelSize: DeckPalette.px(22)
                     font.weight: Font.Medium
+                }
+            }
+            // Workspaces of this monitor: the shown one is selected, the active
+            // one is marked, empty ones are dimmed. Number keys do the same.
+            Row {
+                id: slots
+                visible: !header.compact
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: (header.height - height) / 2
+                spacing: DeckPalette.px(4)
+                Repeater {
+                    model: 10
+                    delegate: DeckButton {
+                        id: slotButton
+                        required property int index
+                        readonly property int slot: index + 1
+                        readonly property int count: root.slotCounts[index] || 0
+                        width: DeckPalette.px(30); height: DeckPalette.px(30)
+                        activeFocusOnTab: false
+                        selected: Model.slot(root.workspaceId) === slotButton.slot
+                        busy: root.busy
+                        accessibleName: strings.t("deck.area").arg(Commons.I18n.formatNumber(slot)) + ", "
+                            + strings.tn("deck.windows", count).arg(Commons.I18n.formatNumber(count))
+                        PlainText {
+                            anchors.centerIn: parent
+                            text: Commons.I18n.formatNumber(slotButton.slot % 10)
+                            font.family: DeckPalette.monoFamily
+                            font.pixelSize: DeckPalette.px(13)
+                            font.weight: slotButton.selected ? Font.DemiBold : Font.Normal
+                            color: slotButton.selected ? DeckPalette.accent : slotButton.count ? DeckPalette.foreground : DeckPalette.muted
+                            opacity: slotButton.count || slotButton.selected ? 1 : 0.55
+                        }
+                        Rectangle {
+                            visible: Model.slot(root.activeWorkspace) === slotButton.slot
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: DeckPalette.px(3)
+                            width: DeckPalette.px(12); height: 2; radius: 1
+                            color: DeckPalette.minimized
+                        }
+                        onActivated: { root.workspaceRequested(slotButton.slot); root.focusPicker(); }
+                    }
                 }
             }
             Row {
@@ -136,6 +190,7 @@ Item {
                                 if (slot.distance === 0) root.accepted(slot.modelData);
                                 else { root.selectionRequested(slot.index); root.focusPicker(); }
                             }
+                            onActionRequested: function(action) { root.manageRequested(action); root.focusPicker(); }
                         }
                     }
                 }
@@ -185,7 +240,9 @@ Item {
                 anchors.bottomMargin: DeckPalette.px(25)
                 spacing: DeckPalette.px(22)
                 Repeater {
-                    model: [{ keys: "Tab  /  ← →", label: "deck.choose" }, { keys: "Enter", label: "deck.open" }, { keys: "Esc", label: "deck.back" }]
+                    model: [{ keys: "Tab  /  ← →", label: "deck.choose" }, { keys: "Enter", label: "deck.open" }]
+                        .concat(header.compact ? [] : [{ keys: "↑ ↓", label: "deck.manage" }, { keys: "1 – 0", label: "deck.workspace" }])
+                        .concat([{ keys: "Esc", label: "deck.back" }])
                     delegate: Row {
                         id: hint
                         required property var modelData
@@ -216,6 +273,10 @@ Item {
             else if (event.key === Qt.Key_Right) root.step(1);
             else if (event.key === Qt.Key_Left) root.step(-1);
             else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) root.confirm();
+            else if (event.key === Qt.Key_Up) root.manageSelected("up");
+            else if (event.key === Qt.Key_Down) root.manageSelected("down");
+            else if (Model.slotForKey(event.text) > 0 && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)))
+                root.workspaceRequested(Model.slotForKey(event.text));
             else if (event.key === Qt.Key_R && root.error) root.retryRequested();
             else return;
             event.accepted = true;
