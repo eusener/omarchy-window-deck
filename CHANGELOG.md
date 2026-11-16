@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0
+
+- Novos atalhos: Ctrl+Super+↑ maximiza, Ctrl+Super+↓ minimiza e Ctrl+Super+Alt+↑ restaura. Super+M volta à minimização nativa do Omarchy; Super+Ctrl+M e Super+Ctrl+Shift+M deixam de ser usados.
+- Ctrl+Super+Alt+↑ traz a minimizada no tamanho dela, sem maximizar. Antes, com outra janela maximizada na área, a restaurada herdava a maximização.
+- `operations.lua` expõe `restore_candidate()`, a janela que Ctrl+Super+Alt+↑ traria de volta, para que um atalho possa entregá-la a outro restaurador, como um dock com animação própria.
+- **Migração:** substitua o bloco do Window Deck em `bindings.lua` pelo bloco novo do README; `install.py` atualiza o bloco gerenciado sozinho.
+
 ## 1.4.0
 
 - Remove o backend Python. Super+M e Super+Ctrl+M rodam como funções Lua dentro do Hyprland, sem iniciar processos; antes cada atalho levava cerca de 130 ms só para iniciar o Python.

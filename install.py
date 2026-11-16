@@ -98,15 +98,15 @@ def binding_block(plugin):
     summon = "omarchy-shell shell summon eusener.window-deck '{}'"
     operations = lua_string(str(plugin / "operations.lua"))
     return (BEGIN + "\n"
-            '-- Super+Tab replaces Next workspace; Super+M minimizes in either layout.\n'
+            '-- Super+Tab replaces Next workspace. Ctrl+Super+arrows manage the active window.\n'
             '-- Minimize and restore run inside Hyprland; no process is started.\n'
             f'o.rebind("SUPER + TAB", "Window Deck", {json.dumps(summon, ensure_ascii=False)})\n'
             f'local window_deck_ok, window_deck = pcall(dofile, {operations})\n'
             'if window_deck_ok then\n'
-            '  o.rebind("SUPER + M", "Minimizar janela", window_deck.shortcut("minimize"))\n'
-            '  o.rebind("SUPER + CTRL + M", "Restaurar janela", window_deck.shortcut("restore_last"))\n'
+            '  o.rebind("SUPER + CTRL + DOWN", "Minimizar janela", window_deck.shortcut("minimize"))\n'
+            '  o.rebind("SUPER + CTRL + ALT + UP", "Restaurar janela", window_deck.shortcut("restore_last"))\n'
             'end\n'
-            'o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))\n'
+            'o.rebind("SUPER + CTRL + UP", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))\n'
             '-- Glass behind the picker, like Omarchy\'s own overlays; only while blur is on.\n'
             'hl.layer_rule({ match = { namespace = "^eusener-window-deck$" }, blur = true, ignore_alpha = 0.3 })\n'
             + END + "\n")

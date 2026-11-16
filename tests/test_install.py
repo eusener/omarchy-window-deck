@@ -40,7 +40,7 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(json.loads((backup / "shell.json").read_text()), self.original)
         self.assertTrue((self.root / "omarchy/plugins" / installer.PLUGIN_ID / "Deck.qml").is_file())
         self.assertIn('o.rebind("SUPER + TAB"', self.bindings.read_text())
-        self.assertIn('o.rebind("SUPER + M"', self.bindings.read_text())
+        self.assertIn('o.rebind("SUPER + CTRL + DOWN"', self.bindings.read_text())
 
     def test_repeated_install_has_no_duplicate_entries_or_blocks(self):
         self.install()
@@ -65,15 +65,15 @@ function hl.get_active_window() active_calls = active_calls + 1 return nil end
         self.install()
         target = self.root / 'omarchy/plugins' / installer.PLUGIN_ID
         result = self.run_block('''
-local minimize = bindings["SUPER + M"]
-assert(type(minimize) == "function" and type(bindings["SUPER + CTRL + M"]) == "function")
-local maximize = bindings["SUPER + CTRL + SHIFT + M"]
+local minimize = bindings["SUPER + CTRL + DOWN"]
+assert(type(minimize) == "function" and type(bindings["SUPER + CTRL + ALT + UP"]) == "function")
+local maximize = bindings["SUPER + CTRL + UP"]
 assert(type(maximize) == "table" and maximize.mode == "maximized" and maximize.action == "set")
 minimize()
 assert(active_calls == 1, "shortcut reaches the compositor-side module")
 assert(#layer_rules == 1 and layer_rules[1].match.namespace == "^eusener-window-deck$" and layer_rules[1].blur == true)
 -- The keybindings menu replays the bind through this expression.
-local replay = assert(load("return " .. o.bind_expressions[bindings["SUPER + CTRL + M"]]))()
+local replay = assert(load("return " .. o.bind_expressions[bindings["SUPER + CTRL + ALT + UP"]]))()
 assert(type(replay) == "function")
 io.write(o.bind_expressions[minimize])
 ''')
@@ -84,7 +84,7 @@ io.write(o.bind_expressions[minimize])
         self.install()
         shutil.rmtree(self.root / 'omarchy/plugins' / installer.PLUGIN_ID)
         result = self.run_block('''
-assert(bindings["SUPER + M"] == nil and bindings["SUPER + CTRL + M"] == nil)
+assert(bindings["SUPER + CTRL + DOWN"] == nil and bindings["SUPER + CTRL + ALT + UP"] == nil)
 assert(type(bindings["SUPER + TAB"]) == "string")
 ''')
         self.assertEqual(result.returncode, 0, result.stderr)

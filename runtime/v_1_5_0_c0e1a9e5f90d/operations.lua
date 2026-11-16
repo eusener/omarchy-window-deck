@@ -53,19 +53,21 @@ end
 -- to that focus request and the window would stay behind a maximized one.
 -- Apply the setting here: 1 hands the maximized or fullscreen state over to
 -- the chosen window; any other value only clears it, since an explicit choice
--- is never ignored.
-local function uncover(selector, address, workspace_id)
+-- is never ignored. With keep_size (the restore shortcut) the window comes
+-- back at its own size: the cover is only cleared, never handed over.
+local function uncover(selector, address, workspace_id, keep_size)
     local cover = covering_window(workspace_id, address)
     if not cover then return end
     local mode = cover.fullscreen == 1 and "maximized" or "fullscreen"
     local ok, setting = pcall(hl.get_config, "misc:on_focus_under_fullscreen")
     apply(hl.dsp.window.fullscreen({mode = mode, action = "unset", window = cover}))
-    if not ok or setting == 1 then
+    if not keep_size and (not ok or setting == 1) then
         apply(hl.dsp.window.fullscreen({mode = mode, action = "set", window = selector}))
     end
 end
 
 function M.execute(action, address, expected_workspace, was_minimized)
+    local keep_size = false
     if action == "restore-last" then
         local active = hl.get_active_workspace()
         assert(active and active.id == expected_workspace and valid_workspace(active.id), "Active workspace changed")
@@ -75,7 +77,7 @@ function M.execute(action, address, expected_workspace, was_minimized)
             return
         end
         if address == "" then return end
-        action = "restore"
+        action, keep_size = "restore", true
     end
     assert(type(address) == "string" and address:match("^0x%x+$") and #address <= 34, "Invalid window address")
     assert(valid_workspace(expected_workspace), "Invalid workspace")
@@ -131,7 +133,11 @@ function M.execute(action, address, expected_workspace, was_minimized)
         else
             assert(workspace.id == expected_workspace, "Window moved")
         end
-        uncover(selector, address, expected_workspace)
+        uncover(selector, address, expected_workspace, keep_size)
+        local state = type(window.fullscreen) == "number" and window.fullscreen or 0
+        if keep_size and state ~= 0 then
+            apply(hl.dsp.window.fullscreen({mode = state == 1 and "maximized" or "fullscreen", action = "unset", window = selector}))
+        end
         apply(hl.dsp.focus({window = selector}))
         if window.floating then
             apply(hl.dsp.window.alter_zorder({mode = "top", window = selector}))
@@ -141,7 +147,7 @@ function M.execute(action, address, expected_workspace, was_minimized)
     end
 end
 
--- Super+M: minimize the focused window of a regular workspace.
+-- Ctrl+Super+Down: minimize the focused window of a regular workspace.
 function M.minimize()
     local window = hl.get_active_window()
     if not (window and window.mapped and window.workspace and valid_workspace(window.workspace.id)) then
@@ -150,21 +156,42 @@ function M.minimize()
     return pcall(M.execute, "minimize", window.address, window.workspace.id, false)
 end
 
--- Super+Ctrl+M: unmaximize the focused window, otherwise bring back the most
--- recently focused minimized window of the active workspace. The compositor's
--- focus history provides the order; no timestamps or files are needed.
-function M.restore_last()
-    local active = hl.get_active_workspace()
-    if not (active and valid_workspace(active.id)) then return false end
+-- The most recently focused minimized window of the active workspace, or nil.
+-- The compositor's focus history provides the order; no timestamps or files
+-- are needed.
+local function last_minimized(workspace_id)
     local best, best_order = nil, math.huge
     for _, window in ipairs(hl.get_windows() or {}) do
         local order = window.focus_history_id
         if type(order) ~= "number" or order < 0 then order = math.huge end
-        if window.mapped and is_minimized(window) and M.origin(window) == active.id
+        if window.mapped and is_minimized(window) and M.origin(window) == workspace_id
             and (best == nil or order < best_order) then
             best, best_order = window, order
         end
     end
+    return best
+end
+
+-- The minimized window restore_last would bring back, or nil when it would
+-- unmaximize the focused window instead or do nothing. Lets a binding hand
+-- the same window to another restorer, such as a dock with its own animation.
+function M.restore_candidate()
+    local active = hl.get_active_workspace()
+    if not (active and valid_workspace(active.id)) then return nil end
+    local focused = hl.get_active_window()
+    if focused and focused.mapped and focused.workspace and focused.workspace.id == active.id and focused.fullscreen == 1 then
+        return nil
+    end
+    return last_minimized(active.id)
+end
+
+-- Ctrl+Super+Alt+Up: unmaximize the focused window, otherwise bring back the
+-- most recently focused minimized window of the active workspace at its own
+-- size, never maximized.
+function M.restore_last()
+    local active = hl.get_active_workspace()
+    if not (active and valid_workspace(active.id)) then return false end
+    local best = last_minimized(active.id)
     return pcall(M.execute, "restore-last", best and best.address or "", active.id, best ~= nil)
 end
 

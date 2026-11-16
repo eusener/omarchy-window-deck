@@ -80,7 +80,7 @@ io.write(tostring(ok and value ~= false))
     def restore(self, address="0xabc", workspace=2):
         return self.run_lua(f"deck.execute('restore', {lua_value(address)}, {lua_value(workspace)})")
 
-    # Super+M
+    # Ctrl+Super+Down
 
     def test_minimize_works_without_floating_mode_and_returns_focus(self):
         self.focused = self.windows[0] = window(tags=["omarchy-minimized-from-9", "unrelated"])
@@ -264,7 +264,7 @@ io.write(tostring(ok and value ~= false))
                 self.assertFalse(ok)
                 self.assertEqual(effects, [])
 
-    # Super+Ctrl+M
+    # Ctrl+Super+Alt+Up
 
     def test_restore_last_chooses_recent_minimized_window_in_active_workspace(self):
         self.active_workspace = 12
@@ -277,6 +277,37 @@ io.write(tostring(ok and value ~= false))
         ok, effects = self.run_lua("deck.restore_last()")
         self.assertTrue(ok)
         self.assertEqual(effects, ["move:12", "focus:address:0xccc"])
+
+    def test_restore_shortcut_brings_window_back_at_its_own_size(self):
+        # Another maximized window is only cleared, never handed over, even
+        # with on_focus_under_fullscreen = 1; the window's own kept state too.
+        for own in (0, 1, 2):
+            self.windows = [window(workspace=-99, tags=["omarchy-minimized-from-2"], fullscreen=own),
+                            window("0xdef", fullscreen=1)]
+            with self.subTest(own=own):
+                ok, effects = self.run_lua("deck.restore_last()")
+                self.assertTrue(ok)
+                expected = ["move:2", "fullscreen:address:0xdef:maximized:unset"]
+                if own:
+                    expected.append("fullscreen:address:0xabc:" + ("maximized" if own == 1 else "fullscreen") + ":unset")
+                self.assertEqual(effects, expected + ["focus:address:0xabc"])
+
+    def test_restore_candidate_names_the_window_restore_last_would_bring_back(self):
+        self.windows = [window("0xaaa", -99, ["omarchy-minimized-from-2"], focus_history_id=4),
+                        window("0xbbb", -99, ["omarchy-minimized-from-2"], focus_history_id=1),
+                        window("0xccc", -99, ["omarchy-minimized-from-3"], focus_history_id=0)]
+        ok, effects = self.run_lua("deck.restore_candidate().address == '0xbbb'")
+        self.assertTrue(ok)
+        self.assertEqual(effects, [])
+
+    def test_restore_candidate_is_nil_when_the_shortcut_would_unmaximize_or_find_nothing(self):
+        self.windows = [window(workspace=-99, tags=["omarchy-minimized-from-2"])]
+        self.focused = window("0xdef", fullscreen=1)
+        ok, _ = self.run_lua("deck.restore_candidate() == nil")
+        self.assertTrue(ok)
+        self.windows, self.focused = [window()], None
+        ok, _ = self.run_lua("deck.restore_candidate() == nil")
+        self.assertTrue(ok)
 
     def test_restore_last_is_no_op_without_eligible_minimized_window(self):
         self.windows = [window(), window("0xaaa", -99, ["omarchy-minimized-from-12"]),
