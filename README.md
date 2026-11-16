@@ -35,16 +35,16 @@ Confira os atalhos atuais com `omarchy menu keybindings --print`. Acrescente est
 o.rebind("SUPER + TAB", "Window Deck", "omarchy-shell shell summon eusener.window-deck '{}'")
 local window_deck_ok, window_deck = pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/eusener.window-deck/operations.lua")
 if window_deck_ok then
-  o.rebind("SUPER + M", "Minimizar janela", window_deck.shortcut("minimize"))
-  o.rebind("SUPER + CTRL + M", "Restaurar janela", window_deck.shortcut("restore_last"))
+  o.rebind("SUPER + CTRL + DOWN", "Minimizar janela", window_deck.shortcut("minimize"))
+  o.rebind("SUPER + CTRL + ALT + UP", "Restaurar janela", window_deck.shortcut("restore_last"))
 end
-o.rebind("SUPER + CTRL + SHIFT + M", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))
+o.rebind("SUPER + CTRL + UP", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))
 hl.layer_rule({ match = { namespace = "^eusener-window-deck$" }, blur = true, ignore_alpha = 0.3 })
 ```
 
-Minimizar e restaurar rodam dentro do Hyprland, sem iniciar nenhum processo. Cada tecla carrega a versão atual de `operations.lua`, então uma atualização do plugin vale sem `hyprctl reload`. Se o plugin for removido, Super+M e Super+Ctrl+M voltam aos atalhos padrão no próximo reload. O menu de atalhos do Omarchy continua conseguindo executar esses atalhos. A última linha desfoca o que fica atrás do seletor, como nos overlays do próprio Omarchy. Ela só tem efeito com o blur do Hyprland ligado, pelo modo Glassy.
+Minimizar e restaurar rodam dentro do Hyprland, sem iniciar nenhum processo. Cada tecla carrega a versão atual de `operations.lua`, então uma atualização do plugin vale sem `hyprctl reload`. Se o plugin for removido, Ctrl+Super+↓ e Ctrl+Super+Alt+↑ deixam de existir no próximo reload. O menu de atalhos do Omarchy continua conseguindo executar esses atalhos. A última linha desfoca o que fica atrás do seletor, como nos overlays do próprio Omarchy. Ela só tem efeito com o blur do Hyprland ligado, pelo modo Glassy.
 
-Super+Tab substitui **Next workspace**. Super+M substitui a minimização nativa para funcionar também em áreas em mosaico. Super+Shift+Tab e Super+Ctrl+Tab mantêm suas ações fora do seletor. Aplicar e conferir:
+Super+Tab substitui **Next workspace**. Ctrl+Super+↓ minimiza também em áreas em mosaico; Super+M fica com a minimização nativa do Omarchy. Super+Shift+Tab e Super+Ctrl+Tab mantêm suas ações fora do seletor. Aplicar e conferir:
 
 ```bash
 hyprctl reload
@@ -61,9 +61,9 @@ omarchy-shell shell summon eusener.window-deck '{}'
 
 | Ação | Controle |
 | --- | --- |
-| Minimizar a janela ativa | Super+M, após configurar o atalho |
-| Restaurar o tamanho da maximizada ativa ou trazer a minimizada mais recente | Super+Ctrl+M, após configurar o atalho |
-| Maximizar a janela ativa | Super+Ctrl+Shift+M, após configurar o atalho |
+| Minimizar a janela ativa | Ctrl+Super+↓, após configurar o atalho |
+| Restaurar o tamanho da maximizada ativa ou trazer a minimizada mais recente | Ctrl+Super+Alt+↑, após configurar o atalho |
+| Maximizar a janela ativa | Ctrl+Super+↑, após configurar o atalho |
 | Abrir o seletor da área atual | Super+Tab, após configurar o atalho |
 | Próxima janela | Tab, seta direita ou repetir Super+Tab |
 | Janela anterior | Shift+Tab ou seta esquerda |
@@ -77,7 +77,7 @@ omarchy-shell shell summon eusener.window-deck '{}'
 
 Soltar Super não confirma a seleção. A barra mostra até seis ícones, um por janela minimizada da área ativa daquele monitor. Clique para restaurar. O botão +N abre as minimizadas excedentes. Sem minimizadas, a faixa não ocupa espaço.
 
-Super+Ctrl+M primeiro restaura o tamanho anterior da janela ativa, se ela estiver maximizada. Caso contrário, usa o histórico de foco para trazer a janela minimizada mais recente da área ativa. Sem uma janela maximizada ativa nem minimizadas elegíveis, não faz nada. Janelas de outras áreas ficam onde estão. Super+Ctrl+Shift+M aplica a maximização nativa, preservando a barra, sem alternar para tela cheia.
+Ctrl+Super+Alt+↑ primeiro restaura o tamanho anterior da janela ativa, se ela estiver maximizada. Caso contrário, usa o histórico de foco para trazer a janela minimizada mais recente da área ativa no tamanho dela, nunca maximizada; se outra janela da área estiver maximizada, ela é desmaximizada para a restaurada aparecer. Sem uma janela maximizada ativa nem minimizadas elegíveis, não faz nada. Janelas de outras áreas ficam onde estão. Ctrl+Super+↑ aplica a maximização nativa, preservando a barra, sem alternar para tela cheia.
 
 O seletor abre na área atual, com as janelas abertas e minimizadas dela, e exclui scratchpads. As teclas numéricas mostram outra área do mesmo monitor, seguindo os blocos do Omarchy (1–10 no primeiro monitor, 11–20 no seguinte); ver outra área não troca a área ativa. Enter numa janela de outra área leva até ela. A faixa no cabeçalho marca a área exibida e a atual, e esmaece as vazias.
 

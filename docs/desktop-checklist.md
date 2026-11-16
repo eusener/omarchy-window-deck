@@ -6,9 +6,9 @@ Execute estes testes na sessão gráfica. Testes offscreen não verificam o prot
 - [ ] Configurar os quatro atalhos documentados; executar `hyprctl reload` e confirmar ausência de erros em `hyprctl configerrors`.
 - [ ] Minimizar e restaurar em áreas flutuantes e em mosaico.
 - [ ] Minimizar duas janelas do mesmo aplicativo e restaurar cada uma individualmente.
-- [ ] Usar Super+Ctrl+M repetidamente para restaurar as minimizadas da área ativa na ordem do histórico de foco; sem minimizadas, confirmar que nada muda.
-- [ ] Usar Super+Ctrl+Shift+M para maximizar a janela ativa e conferir que a barra continua visível.
-- [ ] Maximizar uma janela e usar Super+Ctrl+M para voltar ao tamanho anterior, inclusive com outras janelas minimizadas na mesma área.
+- [ ] Usar Ctrl+Super+Alt+↑ repetidamente para restaurar as minimizadas da área ativa na ordem do histórico de foco; sem minimizadas, confirmar que nada muda.
+- [ ] Usar Ctrl+Super+↑ para maximizar a janela ativa e conferir que a barra continua visível.
+- [ ] Maximizar uma janela e usar Ctrl+Super+Alt+↑ para voltar ao tamanho anterior, inclusive com outras janelas minimizadas na mesma área.
 - [ ] Trocar de área e conferir o isolamento das minimizadas.
 - [ ] Em dois monitores, conferir a área ativa de cada barra e a numeração local no seletor.
 - [ ] Minimizar mais de seis janelas e conferir +N e o seletor filtrado.
