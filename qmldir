@@ -4,6 +4,7 @@ PlainText 1.0 PlainText.qml
 AppIcon 1.0 AppIcon.qml
 AppBarIcon 1.0 AppBarIcon.qml
 DeckButton 1.0 DeckButton.qml
+KeyHint 1.0 KeyHint.qml
 WindowCard 1.0 WindowCard.qml
 WindowCapture 1.0 WindowCapture.qml
 WindowBackdrop 1.0 WindowBackdrop.qml

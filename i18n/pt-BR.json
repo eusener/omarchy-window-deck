@@ -29,5 +29,8 @@
   "deck.action.hide": "Minimizar janela",
   "deck.action.maximize": "Maximizar janela",
   "deck.action.unmaximize": "Restaurar tamanho da janela",
-  "deck.action.show": "Restaurar janela na área"
+  "deck.action.show": "Restaurar janela na área",
+  "deck.emptyHint": "Escolha outra área pelos números ou feche o seletor para abrir um app aqui.",
+  "deck.backTo": "Voltar para a área %1",
+  "deck.close": "Fechar"
 }

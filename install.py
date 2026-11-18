@@ -146,6 +146,9 @@ def copy_runtime(source, stage):
     for item in files:
         shutil.copy2(item, stage / item.name)
     shutil.copytree(source / "i18n", stage / "i18n")
+    (stage / "shaders").mkdir()
+    for shader in (source / "shaders").glob("*.qsb"):
+        shutil.copy2(shader, stage / "shaders" / shader.name)
     build_runtime(stage)
 
 
@@ -155,6 +158,7 @@ def build_runtime(stage):
     files = list(stage.glob("*.qml")) + list(stage.glob("*.js")) + list(stage.glob("*.lua"))
     files += [stage / "qmldir"]
     files += list((stage / "i18n").glob("*.json"))
+    files += list((stage / "shaders").glob("*.qsb"))
     digest = hashlib.sha256(manifest["version"].encode())
     for file in sorted(files):
         digest.update(file.relative_to(stage).as_posix().encode() + b"\0" + file.read_bytes())

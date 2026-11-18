@@ -29,5 +29,8 @@
   "deck.action.hide": "Minimize window",
   "deck.action.maximize": "Maximize window",
   "deck.action.unmaximize": "Restore window size",
-  "deck.action.show": "Restore window to its workspace"
+  "deck.action.show": "Restore window to its workspace",
+  "deck.emptyHint": "Pick another workspace with the number keys, or close the picker to open an app here.",
+  "deck.backTo": "Back to workspace %1",
+  "deck.close": "Close"
 }
