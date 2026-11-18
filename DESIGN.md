@@ -7,12 +7,13 @@ omitted:
     reason: Colors are live references to qs.Commons.Color, not a plugin-owned palette.
 typography:
   sans:
-    fontFamily: "monospace"
+    fontFamily: "Inter, menu font"
   mono:
     fontFamily: "monospace"
 rounded:
   DEFAULT: "10px"
   card: "18px"
+  chip: "9px"
   overlay: "26px"
 spacing:
   icon-gap: "4px"
@@ -37,13 +38,13 @@ Runtime ownership: qs.Commons.Color and Style own colors and fonts. DeckPalette.
 
 ## Colors
 
-The panel, foreground and scrim follow Color.menu.background, Color.menu.text and Color.menu.scrim. Card surfaces tint the menu background with Color.menu.selectedBackground. Selection uses Color.imagePicker.selectedBorder; minimized labels use Color.menu.selectedText. Borders use Color.popups.border. Muted text derives from the menu foreground at 65% alpha. These bindings update immediately when Omarchy changes themes, including light themes, without a plugin restart.
+The panel, foreground and scrim follow Color.menu.background, Color.menu.text and Color.menu.scrim. Card surfaces tint the menu background with Color.menu.selectedBackground. Selection uses Color.imagePicker.selectedBorder; minimized labels use Color.menu.selectedText. Resting borders are fine glass edges: the menu foreground at 8% (18% on hover), with a 12% white line along the top edge of the panel and cards. Muted text derives from the menu foreground at 65% alpha. The selected card, the shown workspace and the empty-state symbol use the accent: a soft tint and halo on the card, a light-to-dark accent gradient on chips, with ink chosen by the accent's luminance. These bindings update immediately when Omarchy changes themes, including light themes, without a plugin restart.
 
 Foreground and muted text are used on background/surface. The border is decorative; the theme's selected border carries interaction state. Minimized cards retain an explicit text badge. Do not use the muted color for disabled opacity on already dimmed cards.
 
 ## Typography
 
-Style.font.menuFamily supplies the interface hierarchy: 22 px workspace title, 15–16 px window title, 12–13 px secondary information. Style.font.family supplies keyboard hints and workspace numbers. Sizes are multiplied by the current Omarchy font base-size relative to 12 px. The system fontconfig alias and Omarchy's menu-font override remain authoritative.
+Interface text uses Inter when it is installed, otherwise Style.font.menuFamily: 24 px workspace title, 16 px selected window title (14 px neighbors), 12–14 px secondary information. Workspace numbers use tabular figures. Style.font.family (mono) appears only inside keyboard keys. Sizes are multiplied by the current Omarchy font base-size relative to 12 px. The system fontconfig alias and Omarchy's menu-font override remain authoritative.
 
 Window titles are untrusted plain text. Two caption lines are allowed on the selected card; neighbors use one line. The installed host tooltip explicitly renders Text.PlainText, so titles pass through literally; an integration assertion guards that contract.
 
@@ -59,11 +60,13 @@ Metadata snapshots update existing card bindings. They must not reset every dele
 
 ## Elevation & Depth
 
+The panel shares the launcher's liquid glass. On open the overlay snapshots its screen once (ScreencopyView, not live), shows it lightly blurred under a 68% background scrim that ramps in with the blur, and paints the panel with `shaders/glass.frag` from a heavier, desaturated blur of the same snapshot: 72% tint of the menu background, a refracting bezel along the rounded edge, a lit rim, top sheen, film grain and a 12% darker footer band. The snapshot is opaque, so Hyprland's own layer blur no longer shows once it arrives. Without a snapshot (capture failure, offscreen tests) or with software rendering, which cannot run shader effects, the plain theme panel with fine light edges is used. The documentation preview passes a static item as the backdrop instead of a screen. The compiled `.qsb` is committed; `shaders/build.sh` rebuilds it with qt6-shadertools.
+
 Layering comes from a restrained shadow, tonal steps, overlap and the selected border. One background scrim separates the user from the desktop without losing context. No floating ornamental elements or perpetual motion. Native Qt rectangles keep the interface operable under software rendering; thumbnail content is inset within the rounded outer frame.
 
 ## Shapes
 
-18 px card corners, 26 px panel corners, 10 px overlay button corners. Fine outlines for resting surfaces, 2 px of the active selected-border color for focus. Minimized windows have explicit labels inside the overlay. The bar uses native optical icon bounds and slot sizes, without custom badges, colored underlines or app-image tiles.
+18 px card corners, 26 px panel corners, 9–12 px chips and buttons, pill badges and counters. Fine outlines for resting surfaces; the selected card has a 1 px accent edge and halo; keyboard focus keeps 2 px of the accent. Minimized windows have explicit labels inside the overlay. The bar uses native optical icon bounds and slot sizes, without custom badges, colored underlines or app-image tiles.
 
 ## Components
 

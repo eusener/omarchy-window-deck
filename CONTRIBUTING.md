@@ -30,6 +30,8 @@ bash tests/run-preview.sh
 
 O CI executa as verificações portáteis em Python 3.12/3.14 e Node 24, com Lua 5.4, e o teste de composição Qt. A validação nativa e os demais testes de UI precisam do Omarchy. A integração de tooltip no teste JavaScript é pulada quando o shell não está instalado.
 
+As imagens do README (`docs/preview.png` e `docs/empty-preview.png`) são geradas por `bash scripts/render-docs.sh`, dentro da sessão gráfica: o vidro líquido precisa da GPU, que a plataforma offscreen dos testes não tem. Uma janela de prévia aparece por um instante. Com o ImageMagick instalado, as imagens saem em 1440×900. O teste `run-preview.sh` grava a prévia num diretório temporário e não altera essas imagens.
+
 O teste offscreen não comprova o comportamento real de layer-shell, atalhos ou captura do compositor. Use também [o roteiro de desktop](docs/desktop-checklist.md). As imagens de documentação usam janelas ilustrativas para não publicar dados pessoais.
 
 Para isolar flicker durante movimento, execute `python3 scripts/diagnose-previews.py` na sessão gráfica. Ele abre uma instância separada do seletor usando captura SHM, sem alterar o plugin instalado nem a configuração do shell. Compare com `python3 scripts/diagnose-previews.py --transport default`. Esc fecha cada instância. Essa comparação distingue problemas de transporte DMA-BUF/driver de problemas na interface; estabilidade em SHM não comprova por si só um defeito específico do driver.

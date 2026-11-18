@@ -11,6 +11,7 @@ ln -s /usr/share/omarchy/shell/Ui "$preview_root/Ui"
 sed 's#import "\.\." as Deck#import "plugin" as Deck#; s#Qt.resolvedUrl("../docs/preview.png")#Qt.resolvedUrl("plugin/docs/preview.png")#' "$deck_root/tests/preview.qml" > "$preview_root/shell.qml"
 env QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_STYLE_OVERRIDE=Fusion \
     QT_QUICK_CONTROLS_STYLE=Basic QT_QUICK_BACKEND=software \
+    DECK_PREVIEW_OUTPUT="${DECK_PREVIEW_OUTPUT:-$preview_root/preview.png}" \
     XDG_RUNTIME_DIR="$preview_root/runtime" XDG_CACHE_HOME="$preview_root/cache" \
     HYPRLAND_INSTANCE_SIGNATURE= DISPLAY= WAYLAND_DISPLAY= \
     timeout 15 quickshell -p "$preview_root/shell.qml" 2>&1 | tee "$preview_root/run.log"

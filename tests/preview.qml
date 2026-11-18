@@ -18,6 +18,12 @@ ShellRoot {
         color: "#080C16"
         Item {
             id: canvas
+            // Fixed size, so a tiled preview window still renders the full frame.
+            width: window.implicitWidth
+            height: window.implicitHeight
+            // The desktop behind the picker, also its glass backdrop.
+            Item {
+            id: wallpaper
             anchors.fill: parent
             Rectangle {
                 x: -200; y: -330; width: 1400; height: 900
@@ -57,11 +63,13 @@ ShellRoot {
                 }
                 Deck.PlainText { anchors.centerIn: parent; text: "seg 9 nov   14:32" }
             }
+            }
 
             Deck.DeckView {
                 id: view
                 anchors.fill: parent
                 visible: !Quickshell.env("DECK_PREVIEW_BAR_ONLY")
+                backdropItem: wallpaper
                 workspaceId: 2
                 selectedIndex: 1
                 windows: [
@@ -195,6 +203,8 @@ ShellRoot {
                 console.log("WAYLAND_OVERLAY_CHECK_PENDING: offscreen platform has no layer-shell backend");
             else if (!check(overlayComponent.status === Component.Ready, "Deck loads: " + overlayComponent.errorString())) return;
             console.log("UI_CHECKS_PASSED: 15");
+            // Documentation image of an empty workspace browsed from another one.
+            if (Quickshell.env("DECK_PREVIEW_EMPTY")) { view.windows = []; view.workspaceId = 3; view.activeWorkspace = 2; view.slotCounts = [1, 3, 0, 2]; }
             captureTimer.start();
         }
     }
@@ -207,6 +217,6 @@ ShellRoot {
             }
             console.log("PREVIEW_SAVED");
             Qt.quit();
-        })
+        }, Qt.size(canvas.width, canvas.height))
     }
 }

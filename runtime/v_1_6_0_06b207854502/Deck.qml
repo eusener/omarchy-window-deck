@@ -179,8 +179,8 @@ Item {
     OverlayWindow {
         id: overlay
         shown: root.opened
-        // Hyprland blurs behind this namespace through the layer rule of the
-        // README, which takes effect only while blur is on (the Glassy mode).
+        // The picker paints its own blurred snapshot of the screen (DeckView);
+        // the layer rule of the README only matters until it arrives.
         WlrLayershell.namespace: "eusener-window-deck"
         onContentRevealedChanged: if (contentRevealed) view.focusPicker()
         function focusedScreen() {
@@ -200,6 +200,7 @@ Item {
             busy: DeckState.busy
             error: root.actionError || DeckState.error
             captureEnabled: root.opened
+            backdropScreen: overlay.visible ? overlay.targetScreen : null
             toplevelLookup: function(address) { return DeckState.toplevelFor(address); }
             onSelectionRequested: function(index) { root.choose(index); }
             onAccepted: function(record) { root.confirm(record); }

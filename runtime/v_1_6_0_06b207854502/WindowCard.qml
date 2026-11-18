@@ -29,12 +29,36 @@ Item {
         blur: DeckPalette.px(24)
         color: DeckPalette.shadow
     }
+    // Soft accent halo around the selected card.
+    Rectangle {
+        visible: root.selected
+        anchors.fill: parent
+        anchors.margins: -DeckPalette.px(6)
+        radius: DeckPalette.px(24)
+        color: DeckPalette.tint(0.07)
+    }
     Rectangle {
         anchors.fill: parent
         radius: DeckPalette.px(18)
         color: DeckPalette.surface
-        border.width: root.selected ? 2 : 1
-        border.color: root.selected ? DeckPalette.accent : button.hovered ? DeckPalette.muted : DeckPalette.border
+        border.width: 1
+        border.color: root.selected ? DeckPalette.tint(0.42) : button.hovered ? DeckPalette.ringHover : DeckPalette.ring
+        Rectangle {
+            visible: root.selected
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: parent.radius - 1
+            gradient: Gradient {
+                GradientStop { position: 0; color: DeckPalette.tint(0.20) }
+                GradientStop { position: 1; color: DeckPalette.tint(0.08) }
+            }
+        }
+        // Light catching the top edge of the glass.
+        Rectangle {
+            x: parent.radius; y: 1
+            width: parent.width - parent.radius * 2; height: 1
+            color: DeckPalette.edgeLight
+        }
     }
     Rectangle {
         id: picture
@@ -42,7 +66,7 @@ Item {
         x: root.inset; y: root.inset
         width: parent.width - root.inset * 2
         height: Math.max(1, parent.height - root.captionHeight - root.inset)
-        radius: DeckPalette.px(11)
+        radius: DeckPalette.px(13)
         color: DeckPalette.background
 
         Column {
@@ -82,10 +106,10 @@ Item {
             anchors.top: parent.top; anchors.right: parent.right
             anchors.margins: DeckPalette.px(12)
             width: maximizedBadge.implicitWidth + DeckPalette.px(20)
-            height: DeckPalette.px(27)
+            height: DeckPalette.px(24)
             radius: height / 2
-            color: DeckPalette.background
-            border.color: DeckPalette.accent
+            color: Commons.Util.alpha(DeckPalette.background, 0.72)
+            border.color: Commons.Util.alpha(DeckPalette.accent, 0.45)
             border.width: 1
             PlainText {
                 id: maximizedBadge
@@ -93,6 +117,7 @@ Item {
                 text: strings.t("deck.maximized")
                 color: DeckPalette.accent
                 font.pixelSize: DeckPalette.px(11)
+                font.weight: Font.Medium
             }
         }
         Rectangle {
@@ -100,10 +125,10 @@ Item {
             anchors.top: parent.top; anchors.right: parent.right
             anchors.margins: DeckPalette.px(12)
             width: badge.implicitWidth + DeckPalette.px(20)
-            height: DeckPalette.px(27)
+            height: DeckPalette.px(24)
             radius: height / 2
-            color: DeckPalette.background
-            border.color: DeckPalette.minimized
+            color: Commons.Util.alpha(DeckPalette.background, 0.72)
+            border.color: Commons.Util.alpha(DeckPalette.minimized, 0.45)
             border.width: 1
             PlainText {
                 id: badge
@@ -111,33 +136,52 @@ Item {
                 text: strings.t("deck.minimized")
                 color: DeckPalette.minimized
                 font.pixelSize: DeckPalette.px(11)
+                font.weight: Font.Medium
             }
         }
     }
-    AppIcon {
-        id: appIcon
-        x: DeckPalette.px(20)
-        y: picture.y + picture.height + DeckPalette.px(22)
-        width: DeckPalette.px(28); height: width
-        appId: root.record.appId || ""
+    readonly property real captionTop: picture.y + picture.height
+    Rectangle {
+        id: iconChip
+        x: DeckPalette.px(18)
+        y: root.captionTop + (root.height - root.captionTop - height) / 2
+        width: DeckPalette.px(38); height: width
+        radius: DeckPalette.px(10)
+        color: root.selected ? DeckPalette.tint(0.18) : DeckPalette.chip
+        border.width: 1
+        border.color: root.selected ? DeckPalette.tint(0.32) : DeckPalette.ring
+        AppIcon {
+            id: appIcon
+            anchors.centerIn: parent
+            width: DeckPalette.px(24); height: width
+            appId: root.record.appId || ""
+        }
+    }
+    KeyHint {
+        id: enterHint
+        visible: root.selected
+        anchors.right: parent.right
+        anchors.rightMargin: DeckPalette.px(18)
+        anchors.verticalCenter: iconChip.verticalCenter
+        keys: "↵"
     }
     Column {
-        x: appIcon.x + appIcon.width + DeckPalette.px(12)
-        y: picture.y + picture.height + DeckPalette.px(16)
-        width: root.width - x - DeckPalette.px(20)
-        spacing: DeckPalette.px(3)
+        x: iconChip.x + iconChip.width + DeckPalette.px(12)
+        anchors.verticalCenter: iconChip.verticalCenter
+        width: (enterHint.visible ? enterHint.x - DeckPalette.px(12) : root.width - DeckPalette.px(18)) - x
+        spacing: DeckPalette.px(2)
         PlainText {
             width: parent.width
             text: appIcon.appName || root.record.appId || "Window"
             color: root.selected ? DeckPalette.accent : DeckPalette.muted
-            font.pixelSize: DeckPalette.px(11)
-            font.weight: Font.DemiBold
+            font.pixelSize: DeckPalette.px(12)
+            font.weight: Font.Medium
             elide: Text.ElideRight
         }
         PlainText {
             width: parent.width
             text: root.record.title || root.record.appId || ""
-            font.pixelSize: DeckPalette.px(15)
+            font.pixelSize: DeckPalette.px(root.selected ? 16 : 14)
             font.weight: Font.Medium
             maximumLineCount: root.selected && root.height > DeckPalette.px(280) ? 2 : 1
             wrapMode: Text.Wrap
@@ -174,20 +218,22 @@ Item {
                 required property string modelData
                 width: DeckPalette.px(30); height: width
                 activeFocusOnTab: false
+                chromeless: true
                 busy: root.busy
                 accessibleName: strings.t("deck.action." + modelData)
                 Rectangle {
                     anchors.fill: parent
                     z: -1
-                    radius: Math.min(10, height / 3)
-                    color: DeckPalette.background
-                    opacity: 0.85
+                    radius: DeckPalette.px(9)
+                    color: Commons.Util.alpha(DeckPalette.background, 0.66)
+                    border.width: 1
+                    border.color: actionButton.hovered ? DeckPalette.tint(0.5) : DeckPalette.ringHover
                 }
                 WindowActionIcon {
                     anchors.centerIn: parent
                     kind: actionButton.modelData
                     color: actionButton.hovered ? DeckPalette.accent : DeckPalette.foreground
-                    size: DeckPalette.px(12)
+                    size: DeckPalette.px(11)
                 }
                 onActivated: root.actionRequested(actionButton.modelData)
             }
