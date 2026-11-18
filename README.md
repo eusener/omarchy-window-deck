@@ -4,7 +4,11 @@ Plugin do Omarchy que mostra as janelas minimizadas ao lado dos desktops e abre 
 
 ![Seletor do Window Deck](docs/preview.png)
 
-A prévia usa os componentes reais com janelas ilustrativas. [Ver os ícones da barra](docs/bar-preview.png).
+O seletor tem o mesmo vidro líquido do launcher: ao abrir, desfoca o desktop e pinta o painel com refração na borda, reflexo no topo e granulação. Numa área sem janelas, ele explica o que fazer e oferece voltar para a área atual:
+
+![Seletor numa área sem janelas](docs/empty-preview.png)
+
+As prévias usam os componentes reais com janelas ilustrativas. [Ver os ícones da barra](docs/bar-preview.png).
 
 ## Requisitos
 

@@ -3,7 +3,8 @@
 ## 1.6.0
 
 - Acabamento de vidro no seletor, no mesmo estilo do launcher: Inter nos textos quando instalada (senão, a fonte de menus do Omarchy) e mono só nas teclas; bordas finas de luz em vez do contorno forte; cartão selecionado com tom e halo do accent; faixa de áreas como controle segmentado; contadores em etiquetas; pontos de posição; rodapé com teclas desenhadas. Áreas vazias mostram uma explicação e os botões “Voltar para a área N” e “Fechar”. As cores continuam vindo do tema ativo.
-- O painel usa o mesmo vidro líquido do launcher: ao abrir, o seletor tira um print da tela, desfoca e escurece o fundo e pinta o painel com o shader `shaders/glass.frag` (tinta de 72% do fundo do menu, borda que refrata, reflexo no topo, granulação e rodapé mais escuro). Sem o print, como nos testes offscreen, fica o painel do tema.
+- O painel usa o mesmo vidro líquido do launcher: ao abrir, o seletor tira um print da tela, desfoca e escurece o fundo e pinta o painel com o shader `shaders/glass.frag` (tinta de 72% do fundo do menu, borda que refrata, reflexo no topo, granulação e rodapé mais escuro). Sem o print, ou com renderização por software, fica o painel do tema.
+- README com prints novos do seletor e da área vazia, gerados por `scripts/render-docs.sh`.
 
 ## 1.5.0
 

@@ -23,7 +23,11 @@ Item {
     // and paints the launcher's liquid glass from that snapshot; without it
     // (or until the snapshot arrives) the plain theme panel is used.
     property var backdropScreen: null
-    readonly property bool glass: backdrop.ready
+    // A static item to use instead of a screen snapshot (documentation preview).
+    property Item backdropItem: null
+    // Shader effects need the GPU scene graph; software rendering keeps the
+    // plain theme panel.
+    readonly property bool glass: backdrop.ready && GraphicsInfo.api !== GraphicsInfo.Software
     // A stable identity-only model preserves capture sessions through metadata
     // snapshots, but rebuilds them when a source window is replaced or removed.
     readonly property string windowIdentities: windows.map(function(row) { return row.address; }).join(",")
@@ -59,22 +63,30 @@ Item {
         id: backdrop
         anchors.fill: parent
         property real amount: 0
-        readonly property bool ready: !!shot.item && shot.item.hasContent
+        readonly property bool ready: !!shot.item && (root.backdropScreen ? shot.item.hasContent : true)
         onReadyChanged: if (ready) backdropIn.restart(); else amount = 0
         Loader {
             id: shot
             anchors.fill: parent
-            active: !!root.backdropScreen
-            sourceComponent: ScreencopyView {
+            active: (!!root.backdropScreen || !!root.backdropItem) && GraphicsInfo.api !== GraphicsInfo.Software
+            sourceComponent: root.backdropScreen ? screenShot : itemShot
+        }
+        Component {
+            id: screenShot
+            ScreencopyView {
                 captureSource: root.backdropScreen
                 live: false
                 paintCursor: false
             }
         }
+        Component {
+            id: itemShot
+            ShaderEffectSource { sourceItem: root.backdropItem; live: false }
+        }
         MultiEffect {
             anchors.fill: parent
             source: shot.item
-            visible: backdrop.ready
+            visible: root.glass
             autoPaddingEnabled: false
             blurEnabled: true
             blurMax: 32
@@ -82,7 +94,7 @@ Item {
         }
         Rectangle {
             anchors.fill: parent
-            visible: backdrop.ready
+            visible: root.glass
             color: Commons.Util.alpha(DeckPalette.background, 0.68)
             opacity: backdrop.amount / 0.4
         }
@@ -92,7 +104,7 @@ Item {
             anchors.fill: parent
             source: shot.item
             visible: false
-            layer.enabled: backdrop.ready
+            layer.enabled: root.glass
             autoPaddingEnabled: false
             blurEnabled: true
             blurMax: 64
