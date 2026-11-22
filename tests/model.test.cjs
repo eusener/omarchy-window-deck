@@ -149,3 +149,27 @@ test('slot counts include minimized windows of each workspace in the block', () 
   const counts = M.slotCounts([{ origin: 12, minimized: false }, { origin: 12, minimized: true }, { origin: 20 }, { origin: 2 }, { origin: null }], 15);
   assert.equal(JSON.stringify(counts), '[0,2,0,0,0,0,0,0,0,1]');
 });
+
+const bind = (modmask, key, description, extra = {}) => ({ modmask, key, description, submap: '', mouse: false, ...extra });
+const omarchyDefaults = [bind(64, 'TAB', 'Next workspace'), bind(65, 'TAB', 'Previous workspace'), bind(64, 'UP', 'Focus up')];
+test('shortcut plan takes free combinations and Omarchy\'s Next workspace', () => {
+  assert.deepEqual([...M.shortcutPlan(omarchyDefaults)], ['picker', 'maximize', 'minimize', 'restore']);
+});
+test('shortcut plan leaves user bindings and existing Window Deck bindings alone', () => {
+  const binds = [bind(64, 'TAB', 'Workspace seguinte'), bind(68, 'Down', 'Minimizar janela'), bind(76, 'up', 'Minha ação')];
+  assert.deepEqual([...M.shortcutPlan(binds)], ['maximize']);
+  assert.deepEqual([...M.shortcutPlan([bind(64, 'TAB', 'Window Deck')])], ['maximize', 'minimize', 'restore']);
+});
+test('shortcut plan ignores submaps and mouse binds, and rejects unreadable input', () => {
+  const binds = [bind(68, 'up', 'Resize', { submap: 'resize' }), bind(68, 'up', 'Drag', { mouse: true })];
+  assert.ok(M.shortcutPlan(binds).includes('maximize'));
+  assert.equal(M.shortcutPlan(null), null);
+  assert.equal(M.shortcutPlan({}), null);
+});
+test('shortcut chunk binds known names only', () => {
+  assert.equal(M.shortcutChunk('/p/operations.lua', ['picker', 'restore']),
+    'dofile("/p/operations.lua").register_shortcuts({"picker", "restore"})');
+  assert.equal(M.shortcutChunk('/p/operations.lua', []), '');
+  assert.equal(M.shortcutChunk('/p/operations.lua', null), '');
+  assert.equal(M.shortcutChunk('/p/operations.lua', ['picker', 'x") os.exit() --']), '');
+});

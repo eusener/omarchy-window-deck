@@ -25,6 +25,14 @@ Item {
         if (!appearanceProcess.running) appearanceProcess.running = true;
     }
 
+    // Binds Super+Tab and the arrow shortcuts on the free combinations
+    // (Model.shortcutPlan), so the plugin works right after a native install
+    // without touching bindings.lua. Runs again after every Hyprland reload,
+    // which drops bindings added at runtime.
+    function registerShortcuts() {
+        if (!bindsProcess.running) bindsProcess.running = true;
+    }
+
     function refresh() {
         if (snapshotProcess.running) { pending = true; return; }
         pending = false;
@@ -80,6 +88,19 @@ Item {
     }
 
     Process {
+        id: bindsProcess
+        command: ["hyprctl", "-j", "binds"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var plan = null;
+                try { plan = Model.shortcutPlan(JSON.parse(text)); } catch (e) {}
+                var chunk = Model.shortcutChunk(root.operationsPath, plan);
+                if (chunk) Quickshell.execDetached(["hyprctl", "eval", chunk]);
+            }
+        }
+    }
+
+    Process {
         id: appearanceProcess
         command: ["sh", "-c", "printf '%s\\n' \"$(readlink -f -- \"$1\")\"; hyprctl -j --batch \"$2\"", "_",
             root.stateHome + "/omarchy/current/background",
@@ -102,9 +123,11 @@ Item {
             var name = event ? String(event.name) : "";
             if (Model.shouldRefresh(name))
                 debounce.restart();
-            if (name === "configreloaded")
+            if (name === "configreloaded") {
                 root.refreshAppearance();
+                root.registerShortcuts();
+            }
         }
     }
-    Component.onCompleted: { refresh(); refreshAppearance(); }
+    Component.onCompleted: { refresh(); refreshAppearance(); registerShortcuts(); }
 }

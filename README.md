@@ -33,27 +33,26 @@ O repositório já contém o runtime pronto, o manifesto na raiz e as traduçõe
 
 ### Atalhos
 
-Confira os atalhos atuais com `omarchy menu keybindings --print`. Acrescente este bloco a `~/.config/hypr/bindings.lua`:
+Com o plugin habilitado, os atalhos já funcionam, sem editar nenhum arquivo:
+
+| Atalho | Ação |
+|---|---|
+| Super+Tab | Abrir o seletor (substitui **Next workspace** do Omarchy) |
+| Ctrl+Super+↓ | Minimizar a janela ativa |
+| Ctrl+Super+Alt+↑ | Restaurar a maximizada ativa ou trazer a minimizada mais recente |
+| Ctrl+Super+↑ | Maximizar a janela ativa |
+
+Ao carregar, o plugin consulta `hyprctl binds` e registra cada atalho pelo `hyprctl eval`, no Hyprland em execução. Ele só usa combinações livres ou com o padrão do Omarchy. Se você já ligou uma dessas combinações a outra ação em `bindings.lua`, ela fica como está. Um `hyprctl reload` apaga os atalhos registrados assim, e o plugin registra de novo logo em seguida. Com o plugin desabilitado ou removido, eles somem no próximo reload. Junto com os atalhos vai a regra que desfoca o que fica atrás do seletor, como nos overlays do próprio Omarchy; ela só tem efeito com o blur do Hyprland ligado, pelo modo Glassy.
+
+Minimizar e restaurar rodam dentro do Hyprland, sem iniciar nenhum processo. Cada tecla carrega a versão atual de `operations.lua`, então uma atualização do plugin vale sem `hyprctl reload`. O menu de atalhos do Omarchy (`omarchy menu keybindings --print`) mostra e consegue executar esses atalhos. Ctrl+Super+↓ minimiza também em áreas em mosaico; Super+M fica com a minimização nativa do Omarchy. Super+Shift+Tab e Super+Ctrl+Tab mantêm suas ações fora do seletor.
+
+Para manter **Next workspace** no Super+Tab, ligue a combinação em `~/.config/hypr/bindings.lua` com outra descrição, e o plugin não mexe nela:
 
 ```lua
-o.rebind("SUPER + TAB", "Window Deck", "omarchy-shell shell summon eusener.window-deck '{}'")
-local window_deck_ok, window_deck = pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/eusener.window-deck/operations.lua")
-if window_deck_ok then
-  o.rebind("SUPER + CTRL + DOWN", "Minimizar janela", window_deck.shortcut("minimize"))
-  o.rebind("SUPER + CTRL + ALT + UP", "Restaurar janela", window_deck.shortcut("restore_last"))
-end
-o.rebind("SUPER + CTRL + UP", "Maximizar janela", hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }))
-hl.layer_rule({ match = { namespace = "^eusener-window-deck$" }, blur = true, ignore_alpha = 0.3 })
+o.rebind("SUPER + TAB", "Área seguinte", hl.dsp.focus({ workspace = "m+1" }))
 ```
 
-Minimizar e restaurar rodam dentro do Hyprland, sem iniciar nenhum processo. Cada tecla carrega a versão atual de `operations.lua`, então uma atualização do plugin vale sem `hyprctl reload`. Se o plugin for removido, Ctrl+Super+↓ e Ctrl+Super+Alt+↑ deixam de existir no próximo reload. O menu de atalhos do Omarchy continua conseguindo executar esses atalhos. A última linha desfoca o que fica atrás do seletor, como nos overlays do próprio Omarchy. Ela só tem efeito com o blur do Hyprland ligado, pelo modo Glassy.
-
-Super+Tab substitui **Next workspace**. Ctrl+Super+↓ minimiza também em áreas em mosaico; Super+M fica com a minimização nativa do Omarchy. Super+Shift+Tab e Super+Ctrl+Tab mantêm suas ações fora do seletor. Aplicar e conferir:
-
-```bash
-hyprctl reload
-hyprctl configerrors
-```
+Quem preferir os atalhos gravados em arquivo pode usar o bloco que o `install.py` escreve em `bindings.lua`; o plugin reconhece esses atalhos e não os registra de novo.
 
 O seletor também pode ser aberto sem atalho:
 
@@ -65,10 +64,10 @@ omarchy-shell shell summon eusener.window-deck '{}'
 
 | Ação | Controle |
 | --- | --- |
-| Minimizar a janela ativa | Ctrl+Super+↓, após configurar o atalho |
-| Restaurar o tamanho da maximizada ativa ou trazer a minimizada mais recente | Ctrl+Super+Alt+↑, após configurar o atalho |
-| Maximizar a janela ativa | Ctrl+Super+↑, após configurar o atalho |
-| Abrir o seletor da área atual | Super+Tab, após configurar o atalho |
+| Minimizar a janela ativa | Ctrl+Super+↓ |
+| Restaurar o tamanho da maximizada ativa ou trazer a minimizada mais recente | Ctrl+Super+Alt+↑ |
+| Maximizar a janela ativa | Ctrl+Super+↑ |
+| Abrir o seletor da área atual | Super+Tab |
 | Próxima janela | Tab, seta direita ou repetir Super+Tab |
 | Janela anterior | Shift+Tab ou seta esquerda |
 | Abrir ou restaurar a selecionada | Enter ou clique no cartão selecionado |
@@ -101,13 +100,13 @@ As entradas da interface apontam para um diretório `runtime/` identificado pela
 omarchy plugin disable eusener.window-deck
 ```
 
-Para remover, retire primeiro o bloco adicionado em `bindings.lua`, rode `hyprctl reload` e `hyprctl configerrors`, depois:
+Para remover:
 
 ```bash
 omarchy plugin remove eusener.window-deck
 ```
 
-Sem esses overrides, os atalhos padrão voltam. O dock do Omarchy continua podendo recuperar janelas minimizadas. A remoção não encerra aplicativos.
+Os atalhos registrados pelo plugin somem no próximo `hyprctl reload`, e os padrões do Omarchy voltam. Se você tinha acrescentado o bloco de atalhos em `bindings.lua`, retire-o antes e rode `hyprctl reload` e `hyprctl configerrors`. O dock do Omarchy continua podendo recuperar janelas minimizadas. A remoção não encerra aplicativos.
 
 ## Migrar uma cópia criada pelo instalador antigo
 
