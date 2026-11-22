@@ -36,9 +36,10 @@ QtObject {
     function luminance(c) { return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b; }
 
     // A proportional sans reads as interface text; the mono stays on keys.
-    // Inter is used when installed, otherwise the user's menu font.
+    // Outfit is used when installed, then Inter, otherwise the user's menu font.
     readonly property var installedFamilies: Qt.fontFamilies()
-    readonly property string fontFamily: installedFamilies.indexOf("Inter") !== -1 ? "Inter"
+    readonly property string fontFamily: installedFamilies.indexOf("Outfit") !== -1 ? "Outfit"
+        : installedFamilies.indexOf("Inter") !== -1 ? "Inter"
         : installedFamilies.indexOf("Inter Variable") !== -1 ? "Inter Variable" : Style.font.menuFamily
     readonly property string monoFamily: Style.font.family
     readonly property real fontScale: Math.max(0.85, Style.fontBaseSize / 12)

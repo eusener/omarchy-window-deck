@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1
+
+- Os textos do seletor usam Outfit quando instalada; senão Inter, e por último a fonte de menus do Omarchy. As teclas continuam na mono.
+
 ## 1.7.0
 
 - Os atalhos funcionam logo depois de `omarchy plugin add --enable`, sem editar `bindings.lua` nem rodar o `install.py`. Ao carregar, o plugin consulta `hyprctl binds` e registra Super+Tab, Ctrl+Super+↓, Ctrl+Super+Alt+↑, Ctrl+Super+↑ e a regra de vidro do seletor pelo `hyprctl eval`. Depois de cada reload do Hyprland, registra de novo.
