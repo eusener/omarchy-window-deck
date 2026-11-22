@@ -384,5 +384,46 @@ io.write(tostring(ok and value ~= false))
         self.assertEqual(effects, [])
 
 
+class ShortcutRegistrationTests(unittest.TestCase):
+    """register_shortcuts() binds through Omarchy's o.rebind, like the install.py block."""
+
+    def run_lua(self, call):
+        lua = f'''
+local log = {{}}
+hl = {{ dsp = {{ window = {{ fullscreen = function(args) return "fullscreen:" .. args.mode .. ":" .. args.action end }} }} }}
+function hl.layer_rule(rule) log[#log+1] = "layer:" .. rule.match.namespace end
+o = {{ bind_expressions = {{}} }}
+function o.rebind(keys, description, action)
+    local kind = type(action) == "function" and "function" or tostring(action)
+    log[#log+1] = keys .. "|" .. description .. "|" .. kind
+end
+local deck = dofile({json.dumps(str(OPERATIONS))})
+local ok, err = pcall(function() return {call} end)
+for _, line in ipairs(log) do io.stderr:write(line .. "\\n") end
+io.write(ok and "ok" or tostring(err))
+'''
+        result = subprocess.run(["lua", "-"], input=lua, capture_output=True, text=True, check=True)
+        return result.stdout, result.stderr.splitlines()
+
+    def test_binds_every_shortcut_and_the_glass_rule(self):
+        out, log = self.run_lua('deck.register_shortcuts({"picker", "maximize", "minimize", "restore"})')
+        self.assertEqual(out, "ok")
+        self.assertEqual(log, [
+            "SUPER + TAB|Window Deck|omarchy-shell shell summon eusener.window-deck '{}'",
+            "SUPER + CTRL + UP|Maximizar janela|fullscreen:maximized:set",
+            "SUPER + CTRL + DOWN|Minimizar janela|function",
+            "SUPER + CTRL + ALT + UP|Restaurar janela|function",
+            "layer:^eusener-window-deck$",
+        ])
+
+    def test_unknown_names_bind_nothing(self):
+        out, log = self.run_lua('deck.register_shortcuts({"picker", "bogus"})')
+        self.assertIn("Invalid shortcut", out)
+        self.assertEqual(log, [])
+        out, log = self.run_lua('deck.register_shortcuts({})')
+        self.assertIn("No shortcuts", out)
+        self.assertEqual(log, [])
+
+
 if __name__ == "__main__":
     unittest.main()

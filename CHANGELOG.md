@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0
+
+- Os atalhos funcionam logo depois de `omarchy plugin add --enable`, sem editar `bindings.lua` nem rodar o `install.py`. Ao carregar, o plugin consulta `hyprctl binds` e registra Super+Tab, Ctrl+Super+↓, Ctrl+Super+Alt+↑, Ctrl+Super+↑ e a regra de vidro do seletor pelo `hyprctl eval`. Depois de cada reload do Hyprland, registra de novo.
+- Só usa combinações livres ou com o padrão do Omarchy (Super+Tab: **Next workspace**). Uma combinação que o usuário ligou a outra ação, ou que já tem o atalho do Window Deck pelo bloco do `install.py`, não é alterada.
+- **Migração:** nada a fazer. O bloco do `install.py` em `bindings.lua` continua valendo; pode ser retirado, e o plugin passa a registrar os mesmos atalhos.
+
 ## 1.6.0
 
 - Acabamento de vidro no seletor, no mesmo estilo do launcher: Inter nos textos quando instalada (senão, a fonte de menus do Omarchy) e mono só nas teclas; bordas finas de luz em vez do contorno forte; cartão selecionado com tom e halo do accent; faixa de áreas como controle segmentado; contadores em etiquetas; pontos de posição; rodapé com teclas desenhadas. Áreas vazias mostram uma explicação e os botões “Voltar para a área N” e “Fechar”. As cores continuam vindo do tema ativo.

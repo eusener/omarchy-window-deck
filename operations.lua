@@ -2,8 +2,9 @@
 -- the same Lua call as the mutation, so no external client can interleave a
 -- move between them. The module keeps no globals and installs no hooks.
 --
--- Shortcuts call minimize() and restore_last() directly from bindings.lua; the
--- shell overlay calls execute("restore", ...) through `hyprctl eval`.
+-- Shortcuts call minimize() and restore_last() directly from bindings.lua or
+-- from the bindings register_shortcuts() adds; the shell overlay calls
+-- execute("restore", ...) and register_shortcuts() through `hyprctl eval`.
 local M = {}
 
 local PREFIX = "omarchy-minimized-from-"
@@ -216,6 +217,35 @@ function M.shortcut(name)
         o.bind_expressions[action] = "dofile(" .. string.format("%q", path) .. ")." .. name
     end
     return action
+end
+
+-- The shortcuts the shell binds while the plugin is loaded (Model.SHORTCUTS
+-- decides which combinations are free). Same keys and actions as the
+-- install.py block, so either source leaves the same bindings.
+local SUMMON = "omarchy-shell shell summon eusener.window-deck '{}'"
+local SHORTCUTS = {
+    picker = { "SUPER + TAB", "Window Deck", function() return SUMMON end },
+    maximize = { "SUPER + CTRL + UP", "Maximizar janela",
+        function() return hl.dsp.window.fullscreen({ mode = "maximized", action = "set" }) end },
+    minimize = { "SUPER + CTRL + DOWN", "Minimizar janela", function() return M.shortcut("minimize") end },
+    restore = { "SUPER + CTRL + ALT + UP", "Restaurar janela", function() return M.shortcut("restore_last") end },
+}
+
+-- Bind the named shortcuts and the picker's glass layer rule. The bindings
+-- live in the running config only: a Hyprland reload drops them and the shell
+-- binds them again on `configreloaded`; a disabled plugin stops doing so.
+function M.register_shortcuts(names)
+    assert(type(o) == "table" and type(o.rebind) == "function", "Omarchy bind helpers unavailable")
+    assert(type(names) == "table" and #names > 0, "No shortcuts to bind")
+    for _, name in ipairs(names) do
+        assert(SHORTCUTS[name], "Invalid shortcut")
+    end
+    for _, name in ipairs(names) do
+        local shortcut = SHORTCUTS[name]
+        o.rebind(shortcut[1], shortcut[2], shortcut[3]())
+    end
+    hl.layer_rule({ match = { namespace = "^eusener-window-deck$" }, blur = true, ignore_alpha = 0.3 })
+    return true
 end
 
 return M

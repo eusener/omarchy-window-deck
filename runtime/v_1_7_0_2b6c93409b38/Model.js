@@ -137,6 +137,51 @@ function restoreChunk(operationsPath, address, workspace) {
     return actionChunk(operationsPath, "restore", address, workspace);
 }
 
+// Shortcuts the plugin binds in Hyprland while it is loaded, so a native
+// `omarchy plugin add` works without editing bindings.lua. Modmasks follow
+// Hyprland: SUPER 64, CTRL 4, ALT 8. `replaces` is the description of
+// Omarchy's own binding on that combination, which the plugin may take over;
+// operations.lua holds the matching keys and actions.
+var SHORTCUTS = [
+    { name: "picker", modmask: 64, key: "tab", description: "Window Deck", replaces: "Next workspace" },
+    { name: "maximize", modmask: 68, key: "up", description: "Maximizar janela", replaces: "" },
+    { name: "minimize", modmask: 68, key: "down", description: "Minimizar janela", replaces: "" },
+    { name: "restore", modmask: 76, key: "up", description: "Restaurar janela", replaces: "" },
+];
+
+// The shortcut names to bind given `hyprctl -j binds`, or null when the list
+// is unreadable. A combination is bound when it is free or holds only
+// Omarchy's default. One that already runs the Window Deck action (from the
+// install.py block or an earlier registration) is left as it is, and so is
+// anything else: that binding belongs to the user.
+function shortcutPlan(binds) {
+    if (!Array.isArray(binds)) return null;
+    var plan = [];
+    for (var i = 0; i < SHORTCUTS.length; i++) {
+        var shortcut = SHORTCUTS[i];
+        var free = true;
+        for (var j = 0; j < binds.length; j++) {
+            var bind = binds[j];
+            if (!bind || bind.mouse || (bind.submap || "") !== "" || bind.modmask !== shortcut.modmask
+                || String(bind.key || "").toLowerCase() !== shortcut.key) continue;
+            if (!shortcut.replaces || bind.description !== shortcut.replaces) { free = false; break; }
+        }
+        if (free) plan.push(shortcut.name);
+    }
+    return plan;
+}
+
+// The `hyprctl eval` chunk that binds `names`, or "" when there is nothing
+// valid to bind.
+function shortcutChunk(operationsPath, names) {
+    if (!Array.isArray(names) || !names.length) return "";
+    var known = SHORTCUTS.map(function (s) { return s.name; });
+    for (var i = 0; i < names.length; i++)
+        if (known.indexOf(names[i]) < 0) return "";
+    return "dofile(" + luaString(operationsPath) + ").register_shortcuts({"
+        + names.map(luaString).join(", ") + "})";
+}
+
 // One step on the ladder minimized < normal < maximized: "up" or "down" from
 // the record's state, or "" at either end.
 function ladderAction(record, direction) {
