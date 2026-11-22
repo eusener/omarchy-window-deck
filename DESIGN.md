@@ -7,7 +7,7 @@ omitted:
     reason: Colors are live references to qs.Commons.Color, not a plugin-owned palette.
 typography:
   sans:
-    fontFamily: "Inter, menu font"
+    fontFamily: "Outfit, Inter, menu font"
   mono:
     fontFamily: "monospace"
 rounded:
@@ -44,7 +44,7 @@ Foreground and muted text are used on background/surface. The border is decorati
 
 ## Typography
 
-Interface text uses Inter when it is installed, otherwise Style.font.menuFamily: 24 px workspace title, 16 px selected window title (14 px neighbors), 12–14 px secondary information. Workspace numbers use tabular figures. Style.font.family (mono) appears only inside keyboard keys. Sizes are multiplied by the current Omarchy font base-size relative to 12 px. The system fontconfig alias and Omarchy's menu-font override remain authoritative.
+Interface text uses Outfit when it is installed, then Inter, otherwise Style.font.menuFamily: 24 px workspace title, 16 px selected window title (14 px neighbors), 12–14 px secondary information. Workspace numbers use tabular figures. Style.font.family (mono) appears only inside keyboard keys. Sizes are multiplied by the current Omarchy font base-size relative to 12 px. The system fontconfig alias and Omarchy's menu-font override remain authoritative.
 
 Window titles are untrusted plain text. Two caption lines are allowed on the selected card; neighbors use one line. The installed host tooltip explicitly renders Text.PlainText, so titles pass through literally; an integration assertion guards that contract.
 
